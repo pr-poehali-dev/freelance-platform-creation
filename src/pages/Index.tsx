@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,11 +7,31 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import GoogleAuth from '@/components/GoogleAuth';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedFreelancer, setSelectedFreelancer] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    setUser(null);
+  };
+
+  const handleAuthSuccess = (userData: any) => {
+    setUser(userData);
+    setShowAuthDialog(false);
+  };
 
   const categories = [
     { id: 'all', name: 'Все', icon: 'Grid3x3' },
@@ -134,7 +154,26 @@ const Index = () => {
               <a href="#freelancers" className="text-sm font-medium hover:text-primary transition-colors">
                 Фрилансеры
               </a>
-              <Button variant="outline" size="sm">Войти</Button>
+              {user ? (
+                <>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={user.avatar} />
+                      <AvatarFallback className="gradient-primary text-white text-sm">
+                        {user.name.split(' ').map((n: string) => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium">{user.name}</span>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleLogout}>
+                    Выйти
+                  </Button>
+                </>
+              ) : (
+                <Button variant="outline" size="sm" onClick={() => setShowAuthDialog(true)}>
+                  Войти через Google
+                </Button>
+              )}
               <Button size="sm" className="gradient-primary text-white border-0">
                 Разместить заказ
               </Button>
@@ -378,6 +417,20 @@ const Index = () => {
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-center mb-4">Вход на FreelanceHub</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-4">
+            <p className="text-center text-muted-foreground mb-4">
+              Войдите через Google, чтобы начать работать на бирже фриланса
+            </p>
+            <GoogleAuth onSuccess={handleAuthSuccess} />
+          </div>
         </DialogContent>
       </Dialog>
 
