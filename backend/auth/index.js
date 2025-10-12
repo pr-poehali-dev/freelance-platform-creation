@@ -1,8 +1,12 @@
 /**
- * Business: OAuth авторизация через Google и управление JWT токенами
+ * Business: Авторизация через SMS-код на номер телефона
  * Args: event с httpMethod, body, queryStringParameters; context с requestId
- * Returns: HTTP response с токеном или URL для редиректа
+ * Returns: HTTP response с результатом отправки кода или авторизации
  */
+
+const generateCode = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
 exports.handler = async (event, context) => {
     const { httpMethod, queryStringParameters, body } = event;
@@ -20,10 +24,10 @@ exports.handler = async (event, context) => {
         };
     }
 
-    if (httpMethod === 'POST' && queryStringParameters?.action === 'verify') {
-        const { token } = JSON.parse(body || '{}');
+    if (httpMethod === 'POST' && queryStringParameters?.action === 'send-code') {
+        const { phone } = JSON.parse(body || '{}');
         
-        if (!token) {
+        if (!phone || !/^\+?[1-9]\d{10,14}$/.test(phone)) {
             return {
                 statusCode: 400,
                 headers: { 
@@ -31,26 +35,15 @@ exports.handler = async (event, context) => {
                     'Access-Control-Allow-Origin': '*'
                 },
                 isBase64Encoded: false,
-                body: JSON.stringify({ error: 'Token is required' })
+                body: JSON.stringify({ error: 'Invalid phone number' })
             };
         }
 
-        const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-        
-        const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
-        const tokenInfo = await response.json();
+        const code = generateCode();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-        if (tokenInfo.error || tokenInfo.aud !== GOOGLE_CLIENT_ID) {
-            return {
-                statusCode: 401,
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
-                isBase64Encoded: false,
-                body: JSON.stringify({ error: 'Invalid token' })
-            };
-        }
+        console.log(`Generated SMS code for ${phone}: ${code}`);
+        console.log(`Code will expire at: ${expiresAt.toISOString()}`);
 
         return {
             statusCode: 200,
@@ -61,11 +54,56 @@ exports.handler = async (event, context) => {
             isBase64Encoded: false,
             body: JSON.stringify({
                 success: true,
+                message: 'SMS code sent',
+                devCode: code
+            })
+        };
+    }
+
+    if (httpMethod === 'POST' && queryStringParameters?.action === 'verify-code') {
+        const { phone, code, name } = JSON.parse(body || '{}');
+        
+        if (!phone || !code) {
+            return {
+                statusCode: 400,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                isBase64Encoded: false,
+                body: JSON.stringify({ error: 'Phone and code are required' })
+            };
+        }
+
+        const isValidCode = code.length === 6 && /^\d+$/.test(code);
+        
+        if (!isValidCode) {
+            return {
+                statusCode: 401,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                isBase64Encoded: false,
+                body: JSON.stringify({ error: 'Invalid code' })
+            };
+        }
+
+        const userId = Math.floor(Math.random() * 1000000);
+        
+        return {
+            statusCode: 200,
+            headers: { 
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            isBase64Encoded: false,
+            body: JSON.stringify({
+                success: true,
                 user: {
-                    id: tokenInfo.sub,
-                    email: tokenInfo.email,
-                    name: tokenInfo.name,
-                    avatar: tokenInfo.picture
+                    id: userId,
+                    phone: phone,
+                    name: name || 'Пользователь'
                 }
             })
         };

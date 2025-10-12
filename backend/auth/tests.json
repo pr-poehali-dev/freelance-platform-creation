@@ -10,9 +10,35 @@
       }
     },
     {
-      "name": "Verify token endpoint - missing token",
+      "name": "Send SMS code - invalid phone",
       "method": "POST",
-      "path": "/?action=verify",
+      "path": "/?action=send-code",
+      "body": {
+        "phone": "123"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Send SMS code - valid phone",
+      "method": "POST",
+      "path": "/?action=send-code",
+      "body": {
+        "phone": "+79991234567"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Verify code - missing data",
+      "method": "POST",
+      "path": "/?action=verify-code",
       "body": {},
       "expectedStatus": 400,
       "expectedBody": {

@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import GoogleAuth from '@/components/GoogleAuth';
+import PhoneAuth from '@/components/PhoneAuth';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -171,7 +171,7 @@ const Index = () => {
                 </>
               ) : (
                 <Button variant="outline" size="sm" onClick={() => setShowAuthDialog(true)}>
-                  Войти через Google
+                  Войти
                 </Button>
               )}
               <Button size="sm" className="gradient-primary text-white border-0">
@@ -427,9 +427,9 @@ const Index = () => {
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4">
             <p className="text-center text-muted-foreground mb-4">
-              Войдите через Google, чтобы начать работать на бирже фриланса
+              Введите номер телефона для входа на биржу фриланса
             </p>
-            <GoogleAuth onSuccess={handleAuthSuccess} />
+            <PhoneAuth onSuccess={handleAuthSuccess} />
           </div>
         </DialogContent>
       </Dialog>
