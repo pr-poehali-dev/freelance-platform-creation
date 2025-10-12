@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import PhoneAuth from '@/components/PhoneAuth';
+import CreateOrderDialog from '@/components/CreateOrderDialog';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,6 +16,8 @@ const Index = () => {
   const [selectedFreelancer, setSelectedFreelancer] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [showCreateOrderDialog, setShowCreateOrderDialog] = useState(false);
+  const [orders, setOrders] = useState<any[]>([]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -31,6 +34,32 @@ const Index = () => {
   const handleAuthSuccess = (userData: any) => {
     setUser(userData);
     setShowAuthDialog(false);
+  };
+
+  const loadOrders = async () => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/8034563d-628a-4f60-9ef4-db23d34f9ac6');
+      const data = await response.json();
+      setOrders(data.orders || []);
+    } catch (error) {
+      console.error('Ошибка загрузки заказов:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const handleCreateOrder = () => {
+    if (!user) {
+      setShowAuthDialog(true);
+      return;
+    }
+    setShowCreateOrderDialog(true);
+  };
+
+  const handleOrderCreated = () => {
+    loadOrders();
   };
 
   const categories = [
@@ -174,7 +203,7 @@ const Index = () => {
                   Войти
                 </Button>
               )}
-              <Button size="sm" className="gradient-primary text-white border-0">
+              <Button size="sm" className="gradient-primary text-white border-0" onClick={handleCreateOrder}>
                 Разместить заказ
               </Button>
             </nav>
@@ -233,40 +262,39 @@ const Index = () => {
 
             <TabsContent value="projects" className="space-y-4">
               <div className="grid md:grid-cols-2 gap-6">
-                {filteredProjects.map((project) => (
+                {orders.map((order) => (
                   <Card
-                    key={project.id}
+                    key={order.id}
                     className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 gradient-card"
                   >
                     <CardHeader>
                       <div className="flex items-start justify-between mb-2">
                         <Badge className="gradient-primary text-white border-0">
-                          {categories.find((c) => c.id === project.category)?.name}
+                          {order.category}
                         </Badge>
-                        <span className="text-2xl font-bold text-gradient">{project.budget}</span>
+                        {order.budget_min && order.budget_max && (
+                          <span className="text-2xl font-bold text-gradient">
+                            {order.budget_min.toLocaleString()} - {order.budget_max.toLocaleString()} ₽
+                          </span>
+                        )}
                       </div>
                       <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                        {project.title}
+                        {order.title}
                       </CardTitle>
-                      <CardDescription className="text-base">{project.description}</CardDescription>
+                      <CardDescription className="text-base">{order.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {project.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-4 text-muted-foreground">
+                          {order.deadline && (
+                            <span className="flex items-center gap-1">
+                              <Icon name="Clock" size={16} />
+                              до {new Date(order.deadline).toLocaleDateString('ru-RU')}
+                            </span>
+                          )}
                           <span className="flex items-center gap-1">
-                            <Icon name="Clock" size={16} />
-                            {project.deadline}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Icon name="Users" size={16} />
-                            {project.proposals} откликов
+                            <Icon name="User" size={16} />
+                            {order.user_name}
                           </span>
                         </div>
                         <Button size="sm" className="gradient-primary text-white border-0">
@@ -276,6 +304,14 @@ const Index = () => {
                     </CardContent>
                   </Card>
                 ))}
+                {orders.length === 0 && (
+                  <div className="col-span-2 text-center py-12 text-muted-foreground">
+                    <p className="text-lg mb-4">Пока нет активных заказов</p>
+                    <Button onClick={handleCreateOrder} className="gradient-primary text-white border-0">
+                      Разместить первый заказ
+                    </Button>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
@@ -433,6 +469,15 @@ const Index = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {user && (
+        <CreateOrderDialog
+          open={showCreateOrderDialog}
+          onOpenChange={setShowCreateOrderDialog}
+          userId={user.id}
+          onSuccess={handleOrderCreated}
+        />
+      )}
 
       <footer className="bg-slate-900 text-white py-12 mt-20">
         <div className="container mx-auto px-4">
