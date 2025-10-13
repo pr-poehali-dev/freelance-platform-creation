@@ -9,6 +9,7 @@ import Icon from '@/components/ui/icon';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import LoginAuth from '@/components/LoginAuth';
 import CreateOrderDialog from '@/components/CreateOrderDialog';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,6 +19,7 @@ const Index = () => {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [showCreateOrderDialog, setShowCreateOrderDialog] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -60,6 +62,49 @@ const Index = () => {
 
   const handleOrderCreated = () => {
     loadOrders();
+  };
+
+  const handleDeleteOrder = async (orderId: number) => {
+    if (!user) return;
+
+    if (!confirm('Вы уверены, что хотите удалить этот заказ?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://functions.poehali.dev/80aa9980-d113-4b04-b84f-7820d7ddb3fd?order_id=${orderId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Id': user.id.toString(),
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: 'Заказ удален',
+          description: 'Ваш заказ успешно удален',
+        });
+        loadOrders();
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Не удалось удалить заказ',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Произошла ошибка при удалении заказа',
+        variant: 'destructive',
+      });
+    }
   };
 
   const categories = [
@@ -297,9 +342,22 @@ const Index = () => {
                             {order.user_name}
                           </span>
                         </div>
-                        <Button size="sm" className="gradient-primary text-white border-0">
-                          Откликнуться
-                        </Button>
+                        <div className="flex gap-2">
+                          {user && user.id === order.user_id ? (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDeleteOrder(order.id)}
+                            >
+                              <Icon name="Trash2" size={16} className="mr-1" />
+                              Удалить
+                            </Button>
+                          ) : (
+                            <Button size="sm" className="gradient-primary text-white border-0">
+                              Откликнуться
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
