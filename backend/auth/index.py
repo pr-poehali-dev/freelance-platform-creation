@@ -100,11 +100,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         password_hash = hash_password(password)
+        google_id_value = f'local_{username}'
+        email_value = email if email else f'{username}@local.user'
         
         cur.execute(
-            "INSERT INTO users (username, password_hash, name, email) "
-            "VALUES (%s, %s, %s, %s) RETURNING id, username, name, email, created_at",
-            (username, password_hash, name, email)
+            "INSERT INTO users (username, password_hash, name, email, google_id) "
+            "VALUES (%s, %s, %s, %s, %s) RETURNING id, username, name, email, created_at",
+            (username, password_hash, name, email_value, google_id_value)
         )
         user = cur.fetchone()
         conn.commit()
