@@ -1,18 +1,17 @@
 import json
 import os
-import random
+import hashlib
 from typing import Dict, Any
-from datetime import datetime, timedelta
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-def generate_code() -> str:
-    """Generate 6-digit verification code"""
-    return str(random.randint(100000, 999999))
+def hash_password(password: str) -> str:
+    """Hash password using SHA256"""
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Phone authentication with SMS verification
+    Business: User authentication with login and password
     Args: event with httpMethod, body, queryStringParameters
           context with request_id
     Returns: HTTP response with auth result
@@ -51,94 +50,127 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     else:
         body_data = json.loads(body_raw)
     
-    if action == 'send-code':
-        phone = body_data.get('phone', '').strip()
+    database_url = os.environ.get('DATABASE_URL')
+    
+    if action == 'register':
+        username = body_data.get('username', '').strip()
+        password = body_data.get('password', '').strip()
+        name = body_data.get('name', '').strip() or username
+        email = body_data.get('email', '').strip()
         
-        if not phone:
+        if not username or not password:
             return {
                 'statusCode': 400,
                 'headers': {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'
                 },
-                'body': json.dumps({'error': 'Phone number is required'}),
+                'body': json.dumps({'error': 'Username and password are required'}),
                 'isBase64Encoded': False
             }
         
-        code = generate_code()
-        expires_at = datetime.now() + timedelta(minutes=5)
+        if len(password) < 6:
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'error': 'Password must be at least 6 characters'}),
+                'isBase64Encoded': False
+            }
         
-        print(f'Generated SMS code for {phone}: {code}')
-        print(f'Code will expire at: {expires_at.isoformat()}')
+        conn = psycopg2.connect(database_url)
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+        existing_user = cur.fetchone()
+        
+        if existing_user:
+            cur.close()
+            conn.close()
+            return {
+                'statusCode': 409,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'error': 'Username already exists'}),
+                'isBase64Encoded': False
+            }
+        
+        password_hash = hash_password(password)
+        
+        cur.execute(
+            "INSERT INTO users (username, password_hash, name, email) "
+            "VALUES (%s, %s, %s, %s) RETURNING id, username, name, email, created_at",
+            (username, password_hash, name, email)
+        )
+        user = cur.fetchone()
+        conn.commit()
+        
+        user_dict = dict(user)
+        user_dict['created_at'] = user_dict['created_at'].isoformat() if user_dict.get('created_at') else None
+        
+        cur.close()
+        conn.close()
         
         return {
-            'statusCode': 200,
+            'statusCode': 201,
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
             'body': json.dumps({
                 'success': True,
-                'message': 'SMS code sent',
-                'devCode': code
+                'user': user_dict
             }),
             'isBase64Encoded': False
         }
     
-    if action == 'verify-code':
-        phone = body_data.get('phone', '').strip()
-        code = body_data.get('code', '').strip()
-        name = body_data.get('name', '').strip() or 'Пользователь'
+    if action == 'login':
+        username = body_data.get('username', '').strip()
+        password = body_data.get('password', '').strip()
         
-        if not phone or not code:
+        if not username or not password:
             return {
                 'statusCode': 400,
                 'headers': {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'
                 },
-                'body': json.dumps({'error': 'Phone and code are required'}),
+                'body': json.dumps({'error': 'Username and password are required'}),
                 'isBase64Encoded': False
             }
         
-        is_valid_code = len(code) == 6 and code.isdigit()
+        conn = psycopg2.connect(database_url)
+        cur = conn.cursor(cursor_factory=RealDictCursor)
         
-        if not is_valid_code:
+        password_hash = hash_password(password)
+        
+        cur.execute(
+            "SELECT id, username, name, email, created_at FROM users "
+            "WHERE username = %s AND password_hash = %s",
+            (username, password_hash)
+        )
+        user = cur.fetchone()
+        
+        cur.close()
+        conn.close()
+        
+        if not user:
             return {
                 'statusCode': 401,
                 'headers': {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'
                 },
-                'body': json.dumps({'error': 'Invalid code'}),
+                'body': json.dumps({'error': 'Invalid username or password'}),
                 'isBase64Encoded': False
             }
         
-        database_url = os.environ.get('DATABASE_URL')
-        conn = psycopg2.connect(database_url)
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        
-        cur.execute(
-            "SELECT id, phone, name, created_at FROM users WHERE phone = %s",
-            (phone,)
-        )
-        user = cur.fetchone()
-        
-        if user:
-            user_dict = dict(user)
-            user_dict['created_at'] = user_dict['created_at'].isoformat() if user_dict.get('created_at') else None
-        else:
-            cur.execute(
-                "INSERT INTO users (phone, name) VALUES (%s, %s) RETURNING id, phone, name, created_at",
-                (phone, name)
-            )
-            user = cur.fetchone()
-            conn.commit()
-            user_dict = dict(user)
-            user_dict['created_at'] = user_dict['created_at'].isoformat() if user_dict.get('created_at') else None
-        
-        cur.close()
-        conn.close()
+        user_dict = dict(user)
+        user_dict['created_at'] = user_dict['created_at'].isoformat() if user_dict.get('created_at') else None
         
         return {
             'statusCode': 200,

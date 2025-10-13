@@ -10,9 +10,9 @@
       }
     },
     {
-      "name": "Send SMS code - missing phone",
+      "name": "Register - missing credentials",
       "method": "POST",
-      "path": "/?action=send-code",
+      "path": "/?action=register",
       "body": {},
       "expectedStatus": 400,
       "expectedBody": {
@@ -21,22 +21,23 @@
       "bodyMatcher": "partial"
     },
     {
-      "name": "Send SMS code - valid phone",
+      "name": "Register - password too short",
       "method": "POST",
-      "path": "/?action=send-code",
+      "path": "/?action=register",
       "body": {
-        "phone": "+79991234567"
+        "username": "testuser",
+        "password": "123"
       },
-      "expectedStatus": 200,
+      "expectedStatus": 400,
       "expectedBody": {
-        "success": true
+        "error": "string"
       },
       "bodyMatcher": "partial"
     },
     {
-      "name": "Verify code - missing data",
+      "name": "Login - missing credentials",
       "method": "POST",
-      "path": "/?action=verify-code",
+      "path": "/?action=login",
       "body": {},
       "expectedStatus": 400,
       "expectedBody": {

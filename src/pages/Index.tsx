@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import PhoneAuth from '@/components/PhoneAuth';
+import LoginAuth from '@/components/LoginAuth';
 import CreateOrderDialog from '@/components/CreateOrderDialog';
 
 const Index = () => {
@@ -463,9 +463,9 @@ const Index = () => {
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4">
             <p className="text-center text-muted-foreground mb-4">
-              Введите номер телефона для входа на биржу фриланса
+              Войдите или зарегистрируйтесь на бирже фриланса
             </p>
-            <PhoneAuth onSuccess={handleAuthSuccess} />
+            <LoginAuth onSuccess={handleAuthSuccess} />
           </div>
         </DialogContent>
       </Dialog>
