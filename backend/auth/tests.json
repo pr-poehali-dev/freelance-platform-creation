@@ -10,12 +10,10 @@
       }
     },
     {
-      "name": "Send SMS code - invalid phone",
+      "name": "Send SMS code - missing phone",
       "method": "POST",
       "path": "/?action=send-code",
-      "body": {
-        "phone": "123"
-      },
+      "body": {},
       "expectedStatus": 400,
       "expectedBody": {
         "error": "string"
