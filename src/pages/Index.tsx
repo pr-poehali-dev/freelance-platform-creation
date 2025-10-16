@@ -220,7 +220,7 @@ const Index = () => {
       <header className="border-b bg-white/80 backdrop-blur-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gradient">FreelanceHub</h1>
+            <h1 className="text-3xl font-bold text-gradient">Try-its</h1>
             <nav className="hidden md:flex items-center gap-6">
               <a href="#projects" className="text-sm font-medium hover:text-primary transition-colors">
                 Заказы
