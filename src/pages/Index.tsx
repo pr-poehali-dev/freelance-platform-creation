@@ -9,6 +9,7 @@ import Icon from '@/components/ui/icon';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import LoginAuth from '@/components/LoginAuth';
 import CreateOrderDialog from '@/components/CreateOrderDialog';
+import ProfileDialog from '@/components/ProfileDialog';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -18,6 +19,7 @@ const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [showCreateOrderDialog, setShowCreateOrderDialog] = useState(false);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
   const { toast } = useToast();
 
@@ -230,7 +232,12 @@ const Index = () => {
               </a>
               {user ? (
                 <>
-                  <div className="flex items-center gap-3">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowProfileDialog(true)}
+                    className="flex items-center gap-2"
+                  >
                     <Avatar className="w-8 h-8">
                       <AvatarImage src={user.avatar} />
                       <AvatarFallback className="gradient-primary text-white text-sm">
@@ -238,9 +245,6 @@ const Index = () => {
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">{user.name}</span>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={handleLogout}>
-                    Выйти
                   </Button>
                 </>
               ) : (
@@ -536,6 +540,13 @@ const Index = () => {
           onSuccess={handleOrderCreated}
         />
       )}
+
+      <ProfileDialog
+        open={showProfileDialog}
+        onOpenChange={setShowProfileDialog}
+        user={user}
+        onLogout={handleLogout}
+      />
 
       <footer className="bg-slate-900 text-white py-12 mt-20">
         <div className="container mx-auto px-4">
