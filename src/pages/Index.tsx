@@ -1,16 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Icon from '@/components/ui/icon';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import LoginAuth from '@/components/LoginAuth';
-import CreateOrderDialog from '@/components/CreateOrderDialog';
-import ProfileDialog from '@/components/ProfileDialog';
 import { useToast } from '@/hooks/use-toast';
+import Header from '@/components/Header';
+import HeroSection from '@/components/HeroSection';
+import ProjectsSection from '@/components/ProjectsSection';
+import Dialogs from '@/components/Dialogs';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -219,332 +212,42 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-pink-50/30">
-      <header className="border-b bg-white/80 backdrop-blur-lg sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gradient">Try-its</h1>
-            <nav className="hidden md:flex items-center gap-6">
-              <a href="#projects" className="text-sm font-medium hover:text-primary transition-colors">
-                Заказы
-              </a>
-              <a href="#freelancers" className="text-sm font-medium hover:text-primary transition-colors">
-                Фрилансеры
-              </a>
-              {user ? (
-                <>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setShowProfileDialog(true)}
-                    className="flex items-center gap-2"
-                  >
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={user.avatar} />
-                      <AvatarFallback className="gradient-primary text-white text-sm">
-                        {user.name.split(' ').map((n: string) => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium">{user.name}</span>
-                  </Button>
-                </>
-              ) : (
-                <Button variant="outline" size="sm" onClick={() => setShowAuthDialog(true)}>
-                  Войти
-                </Button>
-              )}
-              <Button size="sm" className="gradient-primary text-white border-0" onClick={handleCreateOrder}>
-                Разместить заказ
-              </Button>
-            </nav>
-          </div>
-        </div>
-      </header>
-
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <h2 className="text-5xl font-bold mb-4">
-              Найдите идеального <span className="text-gradient">фрилансера</span>
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Тысячи профессионалов готовы воплотить ваш проект в реальность
-            </p>
-            <div className="flex gap-2 max-w-2xl mx-auto">
-              <div className="relative flex-1">
-                <Icon name="Search" className="absolute left-3 top-3 text-muted-foreground" size={20} />
-                <Input
-                  placeholder="Поиск по заказам или специалистам..."
-                  className="pl-10 h-12 text-base"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <Button size="lg" className="gradient-primary text-white border-0 px-8">
-                Найти
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex gap-3 justify-center flex-wrap mb-12">
-            {categories.map((cat) => (
-              <Button
-                key={cat.id}
-                variant={selectedCategory === cat.id ? 'default' : 'outline'}
-                className={selectedCategory === cat.id ? 'gradient-primary text-white border-0' : ''}
-                onClick={() => setSelectedCategory(cat.id)}
-              >
-                <Icon name={cat.icon as any} size={16} className="mr-2" />
-                {cat.name}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="projects" className="py-12">
-        <div className="container mx-auto px-4">
-          <Tabs defaultValue="projects" className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-              <TabsTrigger value="projects">Активные заказы</TabsTrigger>
-              <TabsTrigger value="freelancers">Фрилансеры</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="projects" className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-6">
-                {orders.map((order) => (
-                  <Card
-                    key={order.id}
-                    className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 gradient-card"
-                  >
-                    <CardHeader>
-                      <div className="flex items-start justify-between mb-2">
-                        <Badge className="gradient-primary text-white border-0">
-                          {order.category}
-                        </Badge>
-                        {order.budget_min && order.budget_max && (
-                          <span className="text-2xl font-bold text-gradient">
-                            {order.budget_min.toLocaleString()} - {order.budget_max.toLocaleString()} ₽
-                          </span>
-                        )}
-                      </div>
-                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                        {order.title}
-                      </CardTitle>
-                      <CardDescription className="text-base">{order.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-4 text-muted-foreground">
-                          {order.deadline && (
-                            <span className="flex items-center gap-1">
-                              <Icon name="Clock" size={16} />
-                              до {new Date(order.deadline).toLocaleDateString('ru-RU')}
-                            </span>
-                          )}
-                          <span className="flex items-center gap-1">
-                            <Icon name="User" size={16} />
-                            {order.user_name}
-                          </span>
-                        </div>
-                        <div className="flex gap-2">
-                          {user && user.id === order.user_id ? (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDeleteOrder(order.id)}
-                            >
-                              <Icon name="Trash2" size={16} className="mr-1" />
-                              Удалить
-                            </Button>
-                          ) : (
-                            <Button size="sm" className="gradient-primary text-white border-0">
-                              Откликнуться
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-                {orders.length === 0 && (
-                  <div className="col-span-2 text-center py-12 text-muted-foreground">
-                    <p className="text-lg mb-4">Пока нет активных заказов</p>
-                    <Button onClick={handleCreateOrder} className="gradient-primary text-white border-0">
-                      Разместить первый заказ
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="freelancers" className="space-y-4">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {freelancers.map((freelancer) => (
-                  <Card
-                    key={freelancer.id}
-                    className="group hover:shadow-xl transition-all duration-300 cursor-pointer gradient-card border-2 hover:border-primary/20"
-                    onClick={() => setSelectedFreelancer(freelancer)}
-                  >
-                    <CardHeader>
-                      <div className="flex items-center gap-4 mb-3">
-                        <Avatar className="w-16 h-16 border-4 border-primary/20">
-                          <AvatarImage src={freelancer.avatar} />
-                          <AvatarFallback className="gradient-primary text-white text-xl font-bold">
-                            {freelancer.name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <CardTitle className="text-lg mb-1">{freelancer.name}</CardTitle>
-                          <p className="text-sm text-muted-foreground">{freelancer.role}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm mb-3">
-                        <div className="flex items-center gap-1">
-                          <Icon name="Star" size={16} className="fill-yellow-400 text-yellow-400" />
-                          <span className="font-semibold">{freelancer.rating}</span>
-                          <span className="text-muted-foreground">({freelancer.reviews})</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Icon name="Briefcase" size={16} />
-                          <span>{freelancer.completedProjects} проектов</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {freelancer.skills.slice(0, 3).map((skill) => (
-                          <Badge key={skill} variant="secondary" className="text-xs">
-                            {skill}
-                          </Badge>
-                        ))}
-                        {freelancer.skills.length > 3 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{freelancer.skills.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-gradient">{freelancer.hourlyRate}</span>
-                        <Button size="sm" className="gradient-primary text-white border-0">
-                          Нанять
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </section>
-
-      <Dialog open={!!selectedFreelancer} onOpenChange={() => setSelectedFreelancer(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          {selectedFreelancer && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-2xl">Портфолио фрилансера</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-6">
-                <div className="flex items-start gap-6">
-                  <Avatar className="w-24 h-24 border-4 border-primary/20">
-                    <AvatarImage src={selectedFreelancer.avatar} />
-                    <AvatarFallback className="gradient-primary text-white text-3xl font-bold">
-                      {selectedFreelancer.name.split(' ').map((n: string) => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h3 className="text-2xl font-bold mb-1">{selectedFreelancer.name}</h3>
-                    <p className="text-lg text-muted-foreground mb-3">{selectedFreelancer.role}</p>
-                    <div className="flex items-center gap-6 mb-4">
-                      <div className="flex items-center gap-2">
-                        <Icon name="Star" size={20} className="fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold text-lg">{selectedFreelancer.rating}</span>
-                        <span className="text-muted-foreground">({selectedFreelancer.reviews} отзывов)</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Icon name="Briefcase" size={20} />
-                        <span>{selectedFreelancer.completedProjects} выполненных проектов</span>
-                      </div>
-                    </div>
-                    <p className="text-muted-foreground mb-4">{selectedFreelancer.bio}</p>
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl font-bold text-gradient">{selectedFreelancer.hourlyRate}</span>
-                      <Button className="gradient-primary text-white border-0">
-                        <Icon name="MessageCircle" size={18} className="mr-2" />
-                        Написать
-                      </Button>
-                      <Button className="gradient-primary text-white border-0">
-                        <Icon name="Briefcase" size={18} className="mr-2" />
-                        Нанять
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-lg font-semibold mb-3">Навыки</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedFreelancer.skills.map((skill: string) => (
-                      <Badge key={skill} variant="secondary" className="text-sm px-3 py-1">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-lg font-semibold mb-4">Портфолио и кейсы</h4>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {selectedFreelancer.portfolio.map((item: any) => (
-                      <Card key={item.id} className="overflow-hidden group hover:shadow-lg transition-all">
-                        <div className="aspect-video bg-gradient-to-br from-purple-100 to-pink-100 relative overflow-hidden">
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                        <CardHeader>
-                          <CardTitle className="text-base">{item.title}</CardTitle>
-                        </CardHeader>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl text-center mb-4">Вход на FreelanceHub</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col items-center gap-4 py-4">
-            <p className="text-center text-muted-foreground mb-4">
-              Войдите или зарегистрируйтесь на бирже фриланса
-            </p>
-            <LoginAuth onSuccess={handleAuthSuccess} />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {user && (
-        <CreateOrderDialog
-          open={showCreateOrderDialog}
-          onOpenChange={setShowCreateOrderDialog}
-          userId={user.id}
-          onSuccess={handleOrderCreated}
-        />
-      )}
-
-      <ProfileDialog
-        open={showProfileDialog}
-        onOpenChange={setShowProfileDialog}
+      <Header
         user={user}
+        onShowProfile={() => setShowProfileDialog(true)}
+        onShowAuth={() => setShowAuthDialog(true)}
+        onCreateOrder={handleCreateOrder}
+      />
+
+      <HeroSection
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+      />
+
+      <ProjectsSection
+        orders={orders}
+        freelancers={freelancers}
+        user={user}
+        onDeleteOrder={handleDeleteOrder}
+        onFreelancerClick={setSelectedFreelancer}
+        onCreateOrder={handleCreateOrder}
+      />
+
+      <Dialogs
+        selectedFreelancer={selectedFreelancer}
+        onCloseFreelancer={() => setSelectedFreelancer(null)}
+        showAuthDialog={showAuthDialog}
+        onCloseAuth={setShowAuthDialog}
+        onAuthSuccess={handleAuthSuccess}
+        showCreateOrderDialog={showCreateOrderDialog}
+        onCloseCreateOrder={setShowCreateOrderDialog}
+        user={user}
+        onOrderCreated={handleOrderCreated}
+        showProfileDialog={showProfileDialog}
+        onCloseProfile={setShowProfileDialog}
         onLogout={handleLogout}
       />
 
