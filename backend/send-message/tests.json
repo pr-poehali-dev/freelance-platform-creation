@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Send message without auth",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "order_id": 1,
+        "message": "Test message"
+      },
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "Unauthorized"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Send message with missing fields",
+      "method": "POST",
+      "path": "/",
+      "headers": {
+        "X-User-Id": "1"
+      },
+      "body": {
+        "order_id": 1
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
