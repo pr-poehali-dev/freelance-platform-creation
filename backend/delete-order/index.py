@@ -70,7 +70,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
     cur.execute(
-        "SELECT id, user_id FROM orders WHERE id = %s",
+        "SELECT id, user_id FROM t_p96553691_freelance_platform_c.orders WHERE id = %s",
         (int(order_id),)
     )
     order = cur.fetchone()
@@ -101,7 +101,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    cur.execute("DELETE FROM orders WHERE id = %s", (int(order_id),))
+    cur.execute("DELETE FROM t_p96553691_freelance_platform_c.orders WHERE id = %s", (int(order_id),))
     conn.commit()
     
     cur.close()

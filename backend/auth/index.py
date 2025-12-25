@@ -6,7 +6,6 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 
 def hash_password(password: str) -> str:
-    """Hash password using SHA256"""
     return hashlib.sha256(password.encode()).hexdigest()
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -83,7 +82,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         conn = psycopg2.connect(database_url)
         cur = conn.cursor(cursor_factory=RealDictCursor)
         
-        cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+        cur.execute("SELECT id FROM t_p96553691_freelance_platform_c.users WHERE username = %s", (username,))
         existing_user = cur.fetchone()
         
         if existing_user:
@@ -104,7 +103,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         email_value = email if email else f'{username}@local.user'
         
         cur.execute(
-            "INSERT INTO users (username, password_hash, name, email, google_id) "
+            "INSERT INTO t_p96553691_freelance_platform_c.users (username, password_hash, name, email, google_id) "
             "VALUES (%s, %s, %s, %s, %s) RETURNING id, username, name, email, created_at",
             (username, password_hash, name, email_value, google_id_value)
         )
@@ -151,7 +150,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         password_hash = hash_password(password)
         
         cur.execute(
-            "SELECT id, username, name, email, created_at FROM users "
+            "SELECT id, username, name, email, created_at FROM t_p96553691_freelance_platform_c.users "
             "WHERE username = %s AND password_hash = %s",
             (username, password_hash)
         )

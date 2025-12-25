@@ -78,7 +78,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
     cur.execute(
-        "INSERT INTO orders (user_id, title, description, category, budget_min, budget_max, deadline, status) "
+        "INSERT INTO t_p96553691_freelance_platform_c.orders (user_id, title, description, category, budget_min, budget_max, deadline, status) "
         "VALUES (%s, %s, %s, %s, %s, %s, %s, 'active') RETURNING id, title, description, category, budget_min, budget_max, deadline, status, created_at",
         (int(user_id), title, description, category, budget_min, budget_max, deadline)
     )
