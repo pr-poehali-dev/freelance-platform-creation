@@ -1,7 +1,4 @@
 {
   "auth": "https://functions.poehali.dev/062feba6-c3fc-4c82-a634-b94a70ceb0a0",
-  "create-order": "https://functions.poehali.dev/1c4a3519-1f69-48fa-943f-1b48b8fc1bf1",
-  "delete-order": "https://functions.poehali.dev/80aa9980-d113-4b04-b84f-7820d7ddb3fd",
-  "get-orders": "https://functions.poehali.dev/8034563d-628a-4f60-9ef4-db23d34f9ac6",
-  "update-order": "https://functions.poehali.dev/a0efbbba-8082-431e-831c-0bde0a6f108e"
+  "get-orders": "https://functions.poehali.dev/8034563d-628a-4f60-9ef4-db23d34f9ac6"
 }

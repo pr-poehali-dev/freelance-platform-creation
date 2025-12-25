@@ -41,6 +41,7 @@ const LoginAuth = ({ onSuccess }: LoginAuthProps) => {
     const action = isRegister ? 'register' : 'login';
 
     try {
+      console.log('Отправка запроса авторизации:', action, username);
       const response = await fetch(
         `https://functions.poehali.dev/062feba6-c3fc-4c82-a634-b94a70ceb0a0?action=${action}`,
         {
@@ -54,7 +55,9 @@ const LoginAuth = ({ onSuccess }: LoginAuthProps) => {
         }
       );
 
+      console.log('Ответ сервера:', response.status, response.statusText);
       const data = await response.json();
+      console.log('Данные ответа:', data);
 
       if (data.success && data.user) {
         localStorage.setItem('user', JSON.stringify(data.user));
