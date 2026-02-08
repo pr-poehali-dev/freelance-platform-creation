@@ -9,6 +9,7 @@ import ChatListDialog from '@/components/ChatListDialog';
 import UserProfileDialog from '@/components/UserProfileDialog';
 import ResponseDialog from '@/components/ResponseDialog';
 import OrderResponsesDialog from '@/components/OrderResponsesDialog';
+import FreelancerProfileDialog from '@/components/FreelancerProfileDialog';
 
 interface User {
   id: number;
@@ -43,6 +44,20 @@ interface Order {
   user_name: string;
 }
 
+interface TopFreelancer {
+  id: number;
+  user_id: number;
+  name: string;
+  username: string;
+  bio: string;
+  hourly_rate: number;
+  avatar_url: string;
+  skills: string[];
+  rating: number;
+  total_reviews: number;
+  completed_projects: number;
+}
+
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -65,6 +80,9 @@ const Index = () => {
   const [selectedUserData, setSelectedUserData] = useState<User | null>(null);
   const [selectedUserOrders, setSelectedUserOrders] = useState<Order[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [topFreelancers, setTopFreelancers] = useState<TopFreelancer[]>([]);
+  const [showFreelancerProfileDialog, setShowFreelancerProfileDialog] = useState(false);
+  const [selectedFreelancerId, setSelectedFreelancerId] = useState<number | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -96,7 +114,18 @@ const Index = () => {
 
   useEffect(() => {
     loadOrders();
+    loadTopFreelancers();
   }, []);
+
+  const loadTopFreelancers = async () => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/0db794de-963c-4ac1-9537-4f9a94d9ec66?action=list&limit=20');
+      const data = await response.json();
+      setTopFreelancers(data.freelancers || []);
+    } catch (error) {
+      console.error('Ошибка загрузки фрилансеров:', error);
+    }
+  };
 
   const handleCreateOrder = () => {
     if (!user) {
@@ -217,6 +246,27 @@ const Index = () => {
 
   const handleResponseSuccess = () => {
     loadOrders();
+  };
+
+  const handleViewFreelancerProfile = (freelancerId: number) => {
+    setSelectedFreelancerId(freelancerId);
+    setShowFreelancerProfileDialog(true);
+  };
+
+  const handleStartChatWithFreelancer = (userId: number) => {
+    if (!user) {
+      setShowAuthDialog(true);
+      return;
+    }
+    
+    const freelancer = topFreelancers.find(f => f.user_id === userId);
+    if (freelancer) {
+      setActiveChatId(null);
+      setActiveChatUser({ id: userId, name: freelancer.name });
+      setActiveChatOrderId(null);
+      setShowChatDialog(true);
+      setShowFreelancerProfileDialog(false);
+    }
   };
 
   const categories = [
@@ -348,6 +398,7 @@ const Index = () => {
       <ProjectsSection
         orders={orders}
         freelancers={freelancers}
+        topFreelancers={topFreelancers}
         user={user}
         onDeleteOrder={handleDeleteOrder}
         onFreelancerClick={setSelectedFreelancer}
@@ -356,6 +407,7 @@ const Index = () => {
         onStartChat={handleStartChat}
         onRespondToOrder={handleRespondToOrder}
         onViewResponses={handleViewResponses}
+        onViewFreelancerProfile={handleViewFreelancerProfile}
       />
 
       <Dialogs
@@ -423,6 +475,14 @@ const Index = () => {
           />
         </>
       )}
+
+      <FreelancerProfileDialog
+        open={showFreelancerProfileDialog}
+        onOpenChange={setShowFreelancerProfileDialog}
+        freelancerId={selectedFreelancerId}
+        currentUserId={user?.id || null}
+        onStartChat={handleStartChatWithFreelancer}
+      />
 
       <footer className="bg-slate-900 text-white py-12 mt-20">
         <div className="container mx-auto px-4">

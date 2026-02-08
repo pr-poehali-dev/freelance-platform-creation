@@ -36,9 +36,24 @@ interface Freelancer {
   skills: string[];
 }
 
+interface TopFreelancer {
+  id: number;
+  user_id: number;
+  name: string;
+  username: string;
+  bio: string;
+  hourly_rate: number;
+  avatar_url: string;
+  skills: string[];
+  rating: number;
+  total_reviews: number;
+  completed_projects: number;
+}
+
 interface ProjectsSectionProps {
   orders: Order[];
   freelancers: Freelancer[];
+  topFreelancers: TopFreelancer[];
   user: User | null;
   onDeleteOrder: (orderId: number) => void;
   onFreelancerClick: (freelancer: Freelancer) => void;
@@ -47,11 +62,13 @@ interface ProjectsSectionProps {
   onStartChat: (userId: number, orderId: number) => void;
   onRespondToOrder: (orderId: number, orderTitle: string) => void;
   onViewResponses: (orderId: number, orderTitle: string) => void;
+  onViewFreelancerProfile: (freelancerId: number) => void;
 }
 
 const ProjectsSection = ({
   orders,
   freelancers,
+  topFreelancers,
   user,
   onDeleteOrder,
   onFreelancerClick,
@@ -60,14 +77,16 @@ const ProjectsSection = ({
   onStartChat,
   onRespondToOrder,
   onViewResponses,
+  onViewFreelancerProfile,
 }: ProjectsSectionProps) => {
   return (
     <section id="projects" className="py-12">
       <div className="container mx-auto px-4">
         <Tabs defaultValue="projects" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 mb-8">
             <TabsTrigger value="projects">Активные заказы</TabsTrigger>
-            <TabsTrigger value="freelancers">Фрилансеры</TabsTrigger>
+            <TabsTrigger value="top">Топ фрилансеров</TabsTrigger>
+            <TabsTrigger value="freelancers">Все фрилансеры</TabsTrigger>
           </TabsList>
 
           <TabsContent value="projects" className="space-y-4">
@@ -170,6 +189,81 @@ const ProjectsSection = ({
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="top" className="space-y-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {topFreelancers.map((freelancer) => (
+                <Card
+                  key={freelancer.id}
+                  className="group hover:shadow-xl transition-all duration-300 cursor-pointer gradient-card border-2 hover:border-primary/20"
+                  onClick={() => onViewFreelancerProfile(freelancer.id)}
+                >
+                  <CardHeader>
+                    <div className="flex items-center gap-4 mb-3">
+                      <Avatar className="w-16 h-16 border-4 border-primary/20">
+                        <AvatarImage src={freelancer.avatar_url} />
+                        <AvatarFallback className="gradient-primary text-white text-xl font-bold">
+                          {freelancer.name.split(' ').map((n: string) => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle className="text-lg mb-1">{freelancer.name}</CardTitle>
+                        <p className="text-sm text-muted-foreground">@{freelancer.username}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm mb-3">
+                      <div className="flex items-center gap-1">
+                        <Icon name="Star" size={16} className="fill-yellow-400 text-yellow-400" />
+                        <span className="font-semibold">{freelancer.rating.toFixed(1)}</span>
+                        <span className="text-muted-foreground">({freelancer.total_reviews})</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Icon name="Briefcase" size={16} />
+                        <span>{freelancer.completed_projects}</span>
+                      </div>
+                    </div>
+                    {freelancer.bio && (
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{freelancer.bio}</p>
+                    )}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {freelancer.skills && freelancer.skills.slice(0, 3).map((skill: string) => (
+                        <Badge key={skill} variant="secondary" className="text-xs">
+                          {skill}
+                        </Badge>
+                      ))}
+                      {freelancer.skills && freelancer.skills.length > 3 && (
+                        <Badge variant="secondary" className="text-xs">
+                          +{freelancer.skills.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-gradient">
+                        {freelancer.hourly_rate ? `${freelancer.hourly_rate.toLocaleString()} ₽/час` : 'Договорная'}
+                      </span>
+                      <Button 
+                        size="sm" 
+                        className="gradient-primary text-white border-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onViewFreelancerProfile(freelancer.id);
+                        }}
+                      >
+                        Профиль
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            {topFreelancers.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">
+                <p className="text-lg">Пока нет зарегистрированных фрилансеров</p>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="freelancers" className="space-y-4">

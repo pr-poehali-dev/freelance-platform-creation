@@ -1,0 +1,24 @@
+{
+  "tests": [
+    {
+      "name": "Get freelancers list",
+      "method": "GET",
+      "path": "/?action=list&limit=10",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "freelancers": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get freelancer profile without freelancer_id",
+      "method": "GET",
+      "path": "/?action=profile",
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
