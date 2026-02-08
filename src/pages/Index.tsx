@@ -4,6 +4,9 @@ import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import ProjectsSection from '@/components/ProjectsSection';
 import Dialogs from '@/components/Dialogs';
+import ChatDialog from '@/components/ChatDialog';
+import ChatListDialog from '@/components/ChatListDialog';
+import UserProfileDialog from '@/components/UserProfileDialog';
 
 interface User {
   id: number;
@@ -46,6 +49,15 @@ const Index = () => {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [showCreateOrderDialog, setShowCreateOrderDialog] = useState(false);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [showChatListDialog, setShowChatListDialog] = useState(false);
+  const [showChatDialog, setShowChatDialog] = useState(false);
+  const [showUserProfileDialog, setShowUserProfileDialog] = useState(false);
+  const [activeChatId, setActiveChatId] = useState<number | null>(null);
+  const [activeChatUser, setActiveChatUser] = useState<{ id: number; name: string } | null>(null);
+  const [activeChatOrderId, setActiveChatOrderId] = useState<number | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUserData, setSelectedUserData] = useState<User | null>(null);
+  const [selectedUserOrders, setSelectedUserOrders] = useState<Order[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const { toast } = useToast();
 
@@ -133,6 +145,52 @@ const Index = () => {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleViewUserProfile = async (userId: number) => {
+    try {
+      const response = await fetch(
+        `https://functions.poehali.dev/2862d449-505a-4b67-970b-db34c9334ed0?user_id=${userId}`
+      );
+      const data = await response.json();
+      const userOrders = data.orders || [];
+
+      const userResponse = await fetch(
+        `https://functions.poehali.dev/dc6e212b-76c3-4b8c-8484-ab127b176d7e?action=get_user&user_id=${userId}`
+      );
+      const userData = await userResponse.json();
+
+      setSelectedUserId(userId);
+      setSelectedUserData(userData.user || null);
+      setSelectedUserOrders(userOrders);
+      setShowUserProfileDialog(true);
+    } catch (error) {
+      console.error('Ошибка загрузки профиля:', error);
+    }
+  };
+
+  const handleStartChat = (userId: number, orderId: number) => {
+    if (!user) {
+      setShowAuthDialog(true);
+      return;
+    }
+    
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+      setActiveChatId(null);
+      setActiveChatUser({ id: userId, name: order.user_name });
+      setActiveChatOrderId(orderId);
+      setShowChatDialog(true);
+      setShowUserProfileDialog(false);
+    }
+  };
+
+  const handleOpenChatFromList = (chatId: number, otherUserId: number, otherUserName: string) => {
+    setActiveChatId(chatId);
+    setActiveChatUser({ id: otherUserId, name: otherUserName });
+    setActiveChatOrderId(null);
+    setShowChatDialog(true);
+    setShowChatListDialog(false);
   };
 
   const categories = [
@@ -250,6 +308,7 @@ const Index = () => {
         onShowProfile={() => setShowProfileDialog(true)}
         onShowAuth={() => setShowAuthDialog(true)}
         onCreateOrder={handleCreateOrder}
+        onShowChats={() => setShowChatListDialog(true)}
       />
 
       <HeroSection
@@ -267,6 +326,8 @@ const Index = () => {
         onDeleteOrder={handleDeleteOrder}
         onFreelancerClick={setSelectedFreelancer}
         onCreateOrder={handleCreateOrder}
+        onViewUserProfile={handleViewUserProfile}
+        onStartChat={handleStartChat}
       />
 
       <Dialogs
@@ -282,6 +343,35 @@ const Index = () => {
         showProfileDialog={showProfileDialog}
         onCloseProfile={setShowProfileDialog}
         onLogout={handleLogout}
+      />
+
+      {user && (
+        <>
+          <ChatListDialog
+            open={showChatListDialog}
+            onOpenChange={setShowChatListDialog}
+            userId={user.id}
+            onOpenChat={handleOpenChatFromList}
+          />
+
+          <ChatDialog
+            open={showChatDialog}
+            onOpenChange={setShowChatDialog}
+            chatId={activeChatId}
+            otherUser={activeChatUser}
+            currentUserId={user.id}
+            orderId={activeChatOrderId || undefined}
+          />
+        </>
+      )}
+
+      <UserProfileDialog
+        open={showUserProfileDialog}
+        onOpenChange={setShowUserProfileDialog}
+        user={selectedUserData}
+        currentUser={user}
+        userOrders={selectedUserOrders}
+        onStartChat={handleStartChat}
       />
 
       <footer className="bg-slate-900 text-white py-12 mt-20">

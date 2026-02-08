@@ -24,11 +24,61 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '86400'
             },
             'body': '',
+            'isBase64Encoded': False
+        }
+    
+    if method == 'GET' and action == 'get_user':
+        user_id = query_params.get('user_id')
+        
+        if not user_id:
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'error': 'user_id is required'}),
+                'isBase64Encoded': False
+            }
+        
+        conn = psycopg2.connect(database_url)
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        cur.execute(
+            "SELECT id, username, name, email, created_at FROM t_p96553691_freelance_platform_c.users WHERE id = %s",
+            (int(user_id),)
+        )
+        user = cur.fetchone()
+        
+        cur.close()
+        conn.close()
+        
+        if not user:
+            return {
+                'statusCode': 404,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'error': 'User not found'}),
+                'isBase64Encoded': False
+            }
+        
+        user_dict = dict(user)
+        user_dict['created_at'] = user_dict['created_at'].isoformat() if user_dict.get('created_at') else None
+        
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'user': user_dict}),
             'isBase64Encoded': False
         }
     

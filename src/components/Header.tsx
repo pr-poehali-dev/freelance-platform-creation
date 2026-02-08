@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Icon from '@/components/ui/icon';
 
 interface User {
   id: number;
@@ -13,9 +14,10 @@ interface HeaderProps {
   onShowProfile: () => void;
   onShowAuth: () => void;
   onCreateOrder: () => void;
+  onShowChats: () => void;
 }
 
-const Header = ({ user, onShowProfile, onShowAuth, onCreateOrder }: HeaderProps) => {
+const Header = ({ user, onShowProfile, onShowAuth, onCreateOrder, onShowChats }: HeaderProps) => {
   return (
     <header className="border-b bg-white/80 backdrop-blur-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -30,6 +32,14 @@ const Header = ({ user, onShowProfile, onShowAuth, onCreateOrder }: HeaderProps)
             </a>
             {user ? (
               <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onShowChats}
+                  className="relative"
+                >
+                  <Icon name="MessageCircle" size={20} />
+                </Button>
                 <Button 
                   variant="ghost" 
                   size="sm" 

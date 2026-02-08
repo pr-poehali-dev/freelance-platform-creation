@@ -43,6 +43,8 @@ interface ProjectsSectionProps {
   onDeleteOrder: (orderId: number) => void;
   onFreelancerClick: (freelancer: Freelancer) => void;
   onCreateOrder: () => void;
+  onViewUserProfile: (userId: number) => void;
+  onStartChat: (userId: number, orderId: number) => void;
 }
 
 const ProjectsSection = ({
@@ -52,6 +54,8 @@ const ProjectsSection = ({
   onDeleteOrder,
   onFreelancerClick,
   onCreateOrder,
+  onViewUserProfile,
+  onStartChat,
 }: ProjectsSectionProps) => {
   return (
     <section id="projects" className="py-12">
@@ -94,10 +98,13 @@ const ProjectsSection = ({
                             до {new Date(order.deadline).toLocaleDateString('ru-RU')}
                           </span>
                         )}
-                        <span className="flex items-center gap-1">
+                        <button
+                          className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                          onClick={() => onViewUserProfile(order.user_id)}
+                        >
                           <Icon name="User" size={16} />
                           {order.user_name}
-                        </span>
+                        </button>
                       </div>
                       <div className="flex gap-2">
                         {user && user.id === order.user_id ? (
@@ -110,9 +117,20 @@ const ProjectsSection = ({
                             Удалить
                           </Button>
                         ) : (
-                          <Button size="sm" className="gradient-primary text-white border-0">
-                            Откликнуться
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => user ? onStartChat(order.user_id, order.id) : null}
+                              disabled={!user}
+                            >
+                              <Icon name="MessageCircle" size={16} className="mr-1" />
+                              Написать
+                            </Button>
+                            <Button size="sm" className="gradient-primary text-white border-0">
+                              Откликнуться
+                            </Button>
+                          </>
                         )}
                       </div>
                     </div>
