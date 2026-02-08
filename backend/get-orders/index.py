@@ -47,7 +47,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     conn = psycopg2.connect(database_url)
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
-    query = "SELECT o.*, u.name as user_name, u.phone as user_phone FROM t_p96553691_freelance_platform_c.orders o JOIN t_p96553691_freelance_platform_c.users u ON o.user_id = u.id WHERE 1=1"
+    query = "SELECT o.*, u.name as user_name, u.username FROM t_p96553691_freelance_platform_c.orders o JOIN t_p96553691_freelance_platform_c.users u ON o.user_id = u.id WHERE 1=1"
     params = []
     
     if user_id:

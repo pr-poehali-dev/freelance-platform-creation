@@ -8,15 +8,36 @@ import LoginAuth from '@/components/LoginAuth';
 import CreateOrderDialog from '@/components/CreateOrderDialog';
 import ProfileDialog from '@/components/ProfileDialog';
 
+interface User {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+}
+
+interface Freelancer {
+  id: number;
+  name: string;
+  role: string;
+  avatar: string;
+  rating: number;
+  reviews: number;
+  completedProjects: number;
+  hourlyRate: string;
+  skills: string[];
+  portfolio: Array<{ id: number; title: string; image: string }>;
+  bio: string;
+}
+
 interface DialogsProps {
-  selectedFreelancer: any;
+  selectedFreelancer: Freelancer | null;
   onCloseFreelancer: () => void;
   showAuthDialog: boolean;
   onCloseAuth: (open: boolean) => void;
-  onAuthSuccess: (userData: any) => void;
+  onAuthSuccess: (userData: User) => void;
   showCreateOrderDialog: boolean;
   onCloseCreateOrder: (open: boolean) => void;
-  user: any;
+  user: User | null;
   onOrderCreated: () => void;
   showProfileDialog: boolean;
   onCloseProfile: (open: boolean) => void;
@@ -97,7 +118,7 @@ const Dialogs = ({
                 <div>
                   <h4 className="text-lg font-semibold mb-4">Портфолио и кейсы</h4>
                   <div className="grid md:grid-cols-2 gap-4">
-                    {selectedFreelancer.portfolio.map((item: any) => (
+                    {selectedFreelancer.portfolio.map((item) => (
                       <Card key={item.id} className="overflow-hidden group hover:shadow-lg transition-all">
                         <div className="aspect-video bg-gradient-to-br from-purple-100 to-pink-100 relative overflow-hidden">
                           <img

@@ -7,17 +7,38 @@ import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import EditOrderDialog from '@/components/EditOrderDialog';
 
+interface User {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+}
+
+interface Order {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  budget_min?: number;
+  budget_max?: number;
+  deadline?: string;
+  user_id: number;
+  user_name: string;
+  status: string;
+  created_at: string;
+}
+
 interface ProfileDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: any;
+  user: User | null;
   onLogout: () => void;
 }
 
 const ProfileDialog = ({ open, onOpenChange, user, onLogout }: ProfileDialogProps) => {
-  const [myOrders, setMyOrders] = useState<any[]>([]);
+  const [myOrders, setMyOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
-  const [editingOrder, setEditingOrder] = useState<any>(null);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {

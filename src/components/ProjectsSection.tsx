@@ -5,12 +5,43 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 
+interface User {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+}
+
+interface Order {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  budget_min?: number;
+  budget_max?: number;
+  deadline?: string;
+  user_id: number;
+  user_name: string;
+}
+
+interface Freelancer {
+  id: number;
+  name: string;
+  role: string;
+  avatar: string;
+  rating: number;
+  reviews: number;
+  completedProjects: number;
+  hourlyRate: string;
+  skills: string[];
+}
+
 interface ProjectsSectionProps {
-  orders: any[];
-  freelancers: any[];
-  user: any;
+  orders: Order[];
+  freelancers: Freelancer[];
+  user: User | null;
   onDeleteOrder: (orderId: number) => void;
-  onFreelancerClick: (freelancer: any) => void;
+  onFreelancerClick: (freelancer: Freelancer) => void;
   onCreateOrder: () => void;
 }
 

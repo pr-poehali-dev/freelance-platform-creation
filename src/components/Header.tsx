@@ -1,8 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+interface User {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+}
+
 interface HeaderProps {
-  user: any;
+  user: User | null;
   onShowProfile: () => void;
   onShowAuth: () => void;
   onCreateOrder: () => void;

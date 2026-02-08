@@ -5,8 +5,15 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
+interface User {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+}
+
 interface LoginAuthProps {
-  onSuccess: (user: any) => void;
+  onSuccess: (user: User) => void;
 }
 
 const LoginAuth = ({ onSuccess }: LoginAuthProps) => {
@@ -43,7 +50,7 @@ const LoginAuth = ({ onSuccess }: LoginAuthProps) => {
     try {
       console.log('Отправка запроса авторизации:', action, username);
       const response = await fetch(
-        `https://functions.poehali.dev/062feba6-c3fc-4c82-a634-b94a70ceb0a0?action=${action}`,
+        `https://functions.poehali.dev/dc6e212b-76c3-4b8c-8484-ab127b176d7e?action=${action}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

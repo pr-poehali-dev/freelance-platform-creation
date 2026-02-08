@@ -5,15 +5,48 @@ import HeroSection from '@/components/HeroSection';
 import ProjectsSection from '@/components/ProjectsSection';
 import Dialogs from '@/components/Dialogs';
 
+interface User {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+}
+
+interface Freelancer {
+  id: number;
+  name: string;
+  role: string;
+  avatar: string;
+  rating: number;
+  reviews: number;
+  completedProjects: number;
+  hourlyRate: string;
+  skills: string[];
+  portfolio: Array<{ id: number; title: string; image: string }>;
+  bio: string;
+}
+
+interface Order {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  budget_min?: number;
+  budget_max?: number;
+  deadline?: string;
+  user_id: number;
+  user_name: string;
+}
+
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedFreelancer, setSelectedFreelancer] = useState<any>(null);
-  const [user, setUser] = useState<any>(null);
+  const [selectedFreelancer, setSelectedFreelancer] = useState<Freelancer | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [showCreateOrderDialog, setShowCreateOrderDialog] = useState(false);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -28,14 +61,14 @@ const Index = () => {
     setUser(null);
   };
 
-  const handleAuthSuccess = (userData: any) => {
+  const handleAuthSuccess = (userData: User) => {
     setUser(userData);
     setShowAuthDialog(false);
   };
 
   const loadOrders = async () => {
     try {
-      const response = await fetch('https://functions.poehali.dev/8034563d-628a-4f60-9ef4-db23d34f9ac6');
+      const response = await fetch('https://functions.poehali.dev/2862d449-505a-4b67-970b-db34c9334ed0');
       const data = await response.json();
       setOrders(data.orders || []);
     } catch (error) {

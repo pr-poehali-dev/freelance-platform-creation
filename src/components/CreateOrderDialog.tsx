@@ -42,7 +42,7 @@ export default function CreateOrderDialog({ open, onOpenChange, userId, onSucces
     setLoading(true);
 
     try {
-      const response = await fetch('https://functions.poehali.dev/1c4a3519-1f69-48fa-943f-1b48b8fc1bf1', {
+      const response = await fetch('https://functions.poehali.dev/52b0f153-9486-4fff-a72b-90a2cc10eca9', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,8 +72,8 @@ export default function CreateOrderDialog({ open, onOpenChange, userId, onSucces
       setDeadline('');
       onSuccess();
       onOpenChange(false);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Произошла ошибка');
     } finally {
       setLoading(false);
     }
