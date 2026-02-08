@@ -7,6 +7,8 @@ import Dialogs from '@/components/Dialogs';
 import ChatDialog from '@/components/ChatDialog';
 import ChatListDialog from '@/components/ChatListDialog';
 import UserProfileDialog from '@/components/UserProfileDialog';
+import ResponseDialog from '@/components/ResponseDialog';
+import OrderResponsesDialog from '@/components/OrderResponsesDialog';
 
 interface User {
   id: number;
@@ -52,6 +54,10 @@ const Index = () => {
   const [showChatListDialog, setShowChatListDialog] = useState(false);
   const [showChatDialog, setShowChatDialog] = useState(false);
   const [showUserProfileDialog, setShowUserProfileDialog] = useState(false);
+  const [showResponseDialog, setShowResponseDialog] = useState(false);
+  const [showOrderResponsesDialog, setShowOrderResponsesDialog] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [selectedOrderTitle, setSelectedOrderTitle] = useState('');
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
   const [activeChatUser, setActiveChatUser] = useState<{ id: number; name: string } | null>(null);
   const [activeChatOrderId, setActiveChatOrderId] = useState<number | null>(null);
@@ -193,6 +199,26 @@ const Index = () => {
     setShowChatListDialog(false);
   };
 
+  const handleRespondToOrder = (orderId: number, orderTitle: string) => {
+    if (!user) {
+      setShowAuthDialog(true);
+      return;
+    }
+    setSelectedOrderId(orderId);
+    setSelectedOrderTitle(orderTitle);
+    setShowResponseDialog(true);
+  };
+
+  const handleViewResponses = (orderId: number, orderTitle: string) => {
+    setSelectedOrderId(orderId);
+    setSelectedOrderTitle(orderTitle);
+    setShowOrderResponsesDialog(true);
+  };
+
+  const handleResponseSuccess = () => {
+    loadOrders();
+  };
+
   const categories = [
     { id: 'all', name: 'Все', icon: 'Grid3x3' },
     { id: 'design', name: 'Дизайн', icon: 'Palette' },
@@ -328,6 +354,8 @@ const Index = () => {
         onCreateOrder={handleCreateOrder}
         onViewUserProfile={handleViewUserProfile}
         onStartChat={handleStartChat}
+        onRespondToOrder={handleRespondToOrder}
+        onViewResponses={handleViewResponses}
       />
 
       <Dialogs
@@ -373,6 +401,28 @@ const Index = () => {
         userOrders={selectedUserOrders}
         onStartChat={handleStartChat}
       />
+
+      {user && selectedOrderId && (
+        <>
+          <ResponseDialog
+            open={showResponseDialog}
+            onOpenChange={setShowResponseDialog}
+            orderId={selectedOrderId}
+            orderTitle={selectedOrderTitle}
+            userId={user.id}
+            onSuccess={handleResponseSuccess}
+          />
+
+          <OrderResponsesDialog
+            open={showOrderResponsesDialog}
+            onOpenChange={setShowOrderResponsesDialog}
+            orderId={selectedOrderId}
+            orderTitle={selectedOrderTitle}
+            userId={user.id}
+            onResponseAccepted={handleResponseSuccess}
+          />
+        </>
+      )}
 
       <footer className="bg-slate-900 text-white py-12 mt-20">
         <div className="container mx-auto px-4">

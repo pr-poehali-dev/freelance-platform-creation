@@ -45,6 +45,8 @@ interface ProjectsSectionProps {
   onCreateOrder: () => void;
   onViewUserProfile: (userId: number) => void;
   onStartChat: (userId: number, orderId: number) => void;
+  onRespondToOrder: (orderId: number, orderTitle: string) => void;
+  onViewResponses: (orderId: number, orderTitle: string) => void;
 }
 
 const ProjectsSection = ({
@@ -56,6 +58,8 @@ const ProjectsSection = ({
   onCreateOrder,
   onViewUserProfile,
   onStartChat,
+  onRespondToOrder,
+  onViewResponses,
 }: ProjectsSectionProps) => {
   return (
     <section id="projects" className="py-12">
@@ -75,9 +79,14 @@ const ProjectsSection = ({
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between mb-2">
-                      <Badge className="gradient-primary text-white border-0">
-                        {order.category}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge className="gradient-primary text-white border-0">
+                          {order.category}
+                        </Badge>
+                        {order.status === 'in_progress' && (
+                          <Badge className="bg-blue-500 text-white">В работе</Badge>
+                        )}
+                      </div>
                       {order.budget_min && order.budget_max && (
                         <span className="text-2xl font-bold text-gradient">
                           {order.budget_min.toLocaleString()} - {order.budget_max.toLocaleString()} ₽
@@ -108,14 +117,24 @@ const ProjectsSection = ({
                       </div>
                       <div className="flex gap-2">
                         {user && user.id === order.user_id ? (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => onDeleteOrder(order.id)}
-                          >
-                            <Icon name="Trash2" size={16} className="mr-1" />
-                            Удалить
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => onViewResponses(order.id, order.title)}
+                            >
+                              <Icon name="Users" size={16} className="mr-1" />
+                              Отклики
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => onDeleteOrder(order.id)}
+                            >
+                              <Icon name="Trash2" size={16} className="mr-1" />
+                              Удалить
+                            </Button>
+                          </>
                         ) : (
                           <>
                             <Button
@@ -127,7 +146,12 @@ const ProjectsSection = ({
                               <Icon name="MessageCircle" size={16} className="mr-1" />
                               Написать
                             </Button>
-                            <Button size="sm" className="gradient-primary text-white border-0">
+                            <Button 
+                              size="sm" 
+                              className="gradient-primary text-white border-0"
+                              onClick={() => user ? onRespondToOrder(order.id, order.title) : null}
+                              disabled={!user}
+                            >
                               Откликнуться
                             </Button>
                           </>

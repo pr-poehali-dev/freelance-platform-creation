@@ -53,7 +53,7 @@ const ProfileDialog = ({ open, onOpenChange, user, onLogout }: ProfileDialogProp
     setLoading(true);
     try {
       const response = await fetch(
-        `https://functions.poehali.dev/8034563d-628a-4f60-9ef4-db23d34f9ac6?user_id=${user.id}`
+        `https://functions.poehali.dev/2862d449-505a-4b67-970b-db34c9334ed0?user_id=${user.id}`
       );
       const data = await response.json();
       setMyOrders(data.orders || []);
