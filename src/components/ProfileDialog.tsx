@@ -12,6 +12,7 @@ interface User {
   username: string;
   name: string;
   email: string;
+  balance?: number;
 }
 
 interface Order {
@@ -33,9 +34,10 @@ interface ProfileDialogProps {
   onOpenChange: (open: boolean) => void;
   user: User | null;
   onLogout: () => void;
+  onShowWallet: () => void;
 }
 
-const ProfileDialog = ({ open, onOpenChange, user, onLogout }: ProfileDialogProps) => {
+const ProfileDialog = ({ open, onOpenChange, user, onLogout, onShowWallet }: ProfileDialogProps) => {
   const [myOrders, setMyOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
@@ -141,9 +143,23 @@ const ProfileDialog = ({ open, onOpenChange, user, onLogout }: ProfileDialogProp
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl font-bold">
                     {user?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-xl font-semibold">{user?.name || 'Пользователь'}</h3>
                     <p className="text-sm text-muted-foreground">{user?.email || user?.phone}</p>
+                  </div>
+                </div>
+                <div className="gradient-card border-2 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Баланс счета</p>
+                      <p className="text-2xl font-bold text-gradient">
+                        {user?.balance !== undefined ? user.balance.toLocaleString() : '0'} ₽
+                      </p>
+                    </div>
+                    <Button onClick={onShowWallet} className="gradient-primary text-white border-0">
+                      <Icon name="Wallet" size={18} className="mr-2" />
+                      Управление
+                    </Button>
                   </div>
                 </div>
                 <Button variant="outline" onClick={onLogout} className="w-full">

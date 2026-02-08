@@ -13,6 +13,7 @@ interface User {
   username: string;
   name: string;
   email: string;
+  balance?: number;
 }
 
 interface Freelancer {
@@ -42,6 +43,7 @@ interface DialogsProps {
   showProfileDialog: boolean;
   onCloseProfile: (open: boolean) => void;
   onLogout: () => void;
+  onShowWallet: () => void;
 }
 
 const Dialogs = ({
@@ -57,6 +59,7 @@ const Dialogs = ({
   showProfileDialog,
   onCloseProfile,
   onLogout,
+  onShowWallet,
 }: DialogsProps) => {
   return (
     <>
@@ -168,6 +171,7 @@ const Dialogs = ({
         onOpenChange={onCloseProfile}
         user={user}
         onLogout={onLogout}
+        onShowWallet={onShowWallet}
       />
     </>
   );

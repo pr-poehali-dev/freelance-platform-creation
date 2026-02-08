@@ -10,12 +10,14 @@ import UserProfileDialog from '@/components/UserProfileDialog';
 import ResponseDialog from '@/components/ResponseDialog';
 import OrderResponsesDialog from '@/components/OrderResponsesDialog';
 import FreelancerProfileDialog from '@/components/FreelancerProfileDialog';
+import WalletDialog from '@/components/WalletDialog';
 
 interface User {
   id: number;
   username: string;
   name: string;
   email: string;
+  balance?: number;
 }
 
 interface Freelancer {
@@ -83,14 +85,44 @@ const Index = () => {
   const [topFreelancers, setTopFreelancers] = useState<TopFreelancer[]>([]);
   const [showFreelancerProfileDialog, setShowFreelancerProfileDialog] = useState(false);
   const [selectedFreelancerId, setSelectedFreelancerId] = useState<number | null>(null);
+  const [showWalletDialog, setShowWalletDialog] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const userData = JSON.parse(storedUser);
+      setUser(userData);
+      if (userData.id) {
+        loadBalance(userData.id);
+      }
     }
   }, []);
+
+  const loadBalance = async (userId: number) => {
+    try {
+      const response = await fetch(
+        'https://functions.poehali.dev/d070886d-956d-4b8a-801d-eaf576bf9ccf?action=balance',
+        {
+          headers: {
+            'X-User-Id': userId.toString(),
+          },
+        }
+      );
+      const data = await response.json();
+      if (data.balance !== undefined) {
+        setUser((prev) => prev ? { ...prev, balance: data.balance } : null);
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          userData.balance = data.balance;
+          localStorage.setItem('user', JSON.stringify(userData));
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки баланса:', error);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -100,6 +132,19 @@ const Index = () => {
   const handleAuthSuccess = (userData: User) => {
     setUser(userData);
     setShowAuthDialog(false);
+    if (userData.id) {
+      loadBalance(userData.id);
+    }
+  };
+
+  const handleBalanceUpdate = (newBalance: number) => {
+    setUser((prev) => prev ? { ...prev, balance: newBalance } : null);
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      userData.balance = newBalance;
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
   };
 
   const loadOrders = async () => {
@@ -385,6 +430,7 @@ const Index = () => {
         onShowAuth={() => setShowAuthDialog(true)}
         onCreateOrder={handleCreateOrder}
         onShowChats={() => setShowChatListDialog(true)}
+        onShowWallet={() => setShowWalletDialog(true)}
       />
 
       <HeroSection
@@ -423,6 +469,7 @@ const Index = () => {
         showProfileDialog={showProfileDialog}
         onCloseProfile={setShowProfileDialog}
         onLogout={handleLogout}
+        onShowWallet={() => setShowWalletDialog(true)}
       />
 
       {user && (
@@ -483,6 +530,16 @@ const Index = () => {
         currentUserId={user?.id || null}
         onStartChat={handleStartChatWithFreelancer}
       />
+
+      {user && (
+        <WalletDialog
+          open={showWalletDialog}
+          onOpenChange={setShowWalletDialog}
+          userId={user.id}
+          initialBalance={user.balance || 0}
+          onBalanceUpdate={handleBalanceUpdate}
+        />
+      )}
 
       <footer className="bg-slate-900 text-white py-12 mt-20">
         <div className="container mx-auto px-4">

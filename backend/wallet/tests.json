@@ -1,0 +1,27 @@
+{
+  "tests": [
+    {
+      "name": "Get balance without auth",
+      "method": "GET",
+      "path": "/?action=balance",
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get balance with auth",
+      "method": "GET",
+      "path": "/?action=balance",
+      "headers": {
+        "X-User-Id": "1"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "balance": "number"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

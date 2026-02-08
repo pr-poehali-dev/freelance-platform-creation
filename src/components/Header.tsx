@@ -7,6 +7,7 @@ interface User {
   username: string;
   name: string;
   email: string;
+  balance?: number;
 }
 
 interface HeaderProps {
@@ -15,9 +16,10 @@ interface HeaderProps {
   onShowAuth: () => void;
   onCreateOrder: () => void;
   onShowChats: () => void;
+  onShowWallet: () => void;
 }
 
-const Header = ({ user, onShowProfile, onShowAuth, onCreateOrder, onShowChats }: HeaderProps) => {
+const Header = ({ user, onShowProfile, onShowAuth, onCreateOrder, onShowChats, onShowWallet }: HeaderProps) => {
   return (
     <header className="border-b bg-white/80 backdrop-blur-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -32,6 +34,17 @@ const Header = ({ user, onShowProfile, onShowAuth, onCreateOrder, onShowChats }:
             </a>
             {user ? (
               <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onShowWallet}
+                  className="flex items-center gap-2 gradient-card border"
+                >
+                  <Icon name="Wallet" size={18} />
+                  <span className="text-sm font-bold text-gradient">
+                    {user.balance !== undefined ? user.balance.toLocaleString() : '0'} ₽
+                  </span>
+                </Button>
                 <Button 
                   variant="ghost" 
                   size="sm" 
