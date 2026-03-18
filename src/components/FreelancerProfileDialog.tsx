@@ -132,7 +132,7 @@ const FreelancerProfileDialog = ({
               <div className="flex items-center gap-6 mb-4">
                 <div className="flex items-center gap-2">
                   <Icon name="Star" size={20} className="fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold text-lg">{freelancer.rating.toFixed(1)}</span>
+                  <span className="font-semibold text-lg">{Number(freelancer.rating).toFixed(1)}</span>
                   <span className="text-muted-foreground">({freelancer.total_reviews} отзывов)</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">

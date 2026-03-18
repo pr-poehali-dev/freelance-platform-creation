@@ -215,7 +215,7 @@ const ProjectsSection = ({
                     <div className="flex items-center gap-4 text-sm mb-3">
                       <div className="flex items-center gap-1">
                         <Icon name="Star" size={16} className="fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold">{freelancer.rating.toFixed(1)}</span>
+                        <span className="font-semibold">{Number(freelancer.rating).toFixed(1)}</span>
                         <span className="text-muted-foreground">({freelancer.total_reviews})</span>
                       </div>
                       <div className="flex items-center gap-1 text-muted-foreground">
