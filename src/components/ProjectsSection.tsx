@@ -241,16 +241,10 @@ const ProjectsSection = ({
                         <span className="font-medium">Нужна помощь с заказом?</span>
                         <span className="text-amber-600 hidden sm:inline">Наша техподдержка поможет</span>
                       </div>
-                      <a
-                        href="https://poehali.dev/help"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-amber-700 hover:text-amber-900 font-semibold transition-colors whitespace-nowrap"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <span className="flex items-center gap-1 text-amber-700 font-semibold whitespace-nowrap opacity-50 cursor-not-allowed">
                         <Icon name="MessageSquare" size={14} />
                         Написать
-                      </a>
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
