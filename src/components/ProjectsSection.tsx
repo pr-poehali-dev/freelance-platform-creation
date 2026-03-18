@@ -173,7 +173,7 @@ const ProjectsSection = ({
                     </CardTitle>
                     <CardDescription className="text-base">{order.description}</CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-4 text-muted-foreground">
                         {order.deadline && (
@@ -232,6 +232,25 @@ const ProjectsSection = ({
                           </>
                         )}
                       </div>
+                    </div>
+
+                    {/* Плашка техподдержки */}
+                    <div className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm">
+                      <div className="flex items-center gap-2 text-amber-700">
+                        <Icon name="HeadphonesIcon" size={15} />
+                        <span className="font-medium">Нужна помощь с заказом?</span>
+                        <span className="text-amber-600 hidden sm:inline">Наша техподдержка поможет</span>
+                      </div>
+                      <a
+                        href="https://poehali.dev/help"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-amber-700 hover:text-amber-900 font-semibold transition-colors whitespace-nowrap"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Icon name="MessageSquare" size={14} />
+                        Написать
+                      </a>
                     </div>
                   </CardContent>
                 </Card>
