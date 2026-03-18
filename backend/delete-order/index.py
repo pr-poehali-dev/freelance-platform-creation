@@ -71,6 +71,9 @@ def handler(event: dict, context) -> dict:
         }
 
     cur.execute(
+        f"DELETE FROM t_p96553691_freelance_platform_c.order_responses WHERE order_id = {order_id_int}"
+    )
+    cur.execute(
         f"DELETE FROM t_p96553691_freelance_platform_c.orders WHERE id = {order_id_int}"
     )
     conn.commit()
