@@ -65,10 +65,10 @@ const WalletDialog = ({
   const handleDeposit = async () => {
     const amount = parseFloat(depositAmount);
     
-    if (!amount || amount <= 0) {
+    if (!amount || amount < 10) {
       toast({
         title: 'Ошибка',
-        description: 'Введите корректную сумму',
+        description: 'Минимальная сумма пополнения — 10 ₽',
         variant: 'destructive',
       });
       return;
@@ -77,7 +77,7 @@ const WalletDialog = ({
     setLoading(true);
     try {
       const response = await fetch(
-        'https://functions.poehali.dev/d070886d-956d-4b8a-801d-eaf576bf9ccf',
+        'https://functions.poehali.dev/f3fcf6f0-c2fd-48d4-955f-fbb3abfe6ba1',
         {
           method: 'POST',
           headers: {
@@ -85,34 +85,27 @@ const WalletDialog = ({
             'X-User-Id': userId.toString(),
           },
           body: JSON.stringify({
-            action: 'deposit',
-            amount: amount,
+            amount,
+            return_url: window.location.href,
           }),
         }
       );
 
       const data = await response.json();
 
-      if (data.success) {
-        setBalance(data.balance);
-        onBalanceUpdate(data.balance);
-        setDepositAmount('');
-        loadTransactions();
-        toast({
-          title: 'Успешно',
-          description: `Счет пополнен на ${amount.toLocaleString()} ₽`,
-        });
+      if (data.confirmation_url) {
+        window.location.href = data.confirmation_url;
       } else {
         toast({
           title: 'Ошибка',
-          description: data.error || 'Не удалось пополнить счет',
+          description: data.error || 'Не удалось создать платёж',
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
         title: 'Ошибка',
-        description: 'Произошла ошибка при пополнении',
+        description: 'Произошла ошибка при создании платежа',
         variant: 'destructive',
       });
     } finally {
@@ -164,20 +157,28 @@ const WalletDialog = ({
               <div className="flex gap-2">
                 <Input
                   type="number"
-                  placeholder="Сумма пополнения"
+                  placeholder="Сумма, ₽ (мин. 10)"
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(e.target.value)}
                   className="flex-1"
+                  min={10}
                 />
                 <Button
                   onClick={handleDeposit}
                   disabled={loading}
-                  className="gradient-primary text-white border-0"
+                  className="gradient-primary text-white border-0 whitespace-nowrap"
                 >
-                  <Icon name="Plus" size={18} className="mr-2" />
-                  Пополнить
+                  {loading
+                    ? <Icon name="Loader2" size={18} className="mr-2 animate-spin" />
+                    : <Icon name="CreditCard" size={18} className="mr-2" />
+                  }
+                  Оплатить
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                <Icon name="ShieldCheck" size={13} />
+                Безопасная оплата через ЮКассу — карты, СБП, кошельки
+              </p>
             </CardContent>
           </Card>
 
