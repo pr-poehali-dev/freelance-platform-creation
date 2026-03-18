@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Unauthorized (no user id)",
+      "method": "DELETE",
+      "path": "/?order_id=1",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "Unauthorized"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

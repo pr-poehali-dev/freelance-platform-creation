@@ -193,7 +193,7 @@ const Index = () => {
 
     try {
       const response = await fetch(
-        `https://functions.poehali.dev/80aa9980-d113-4b04-b84f-7820d7ddb3fd?order_id=${orderId}`,
+        `https://functions.poehali.dev/1db66e23-3d86-46cc-9d5a-b7e61f16daa9?order_id=${orderId}`,
         {
           method: 'DELETE',
           headers: {
