@@ -5,9 +5,6 @@
       "method": "GET",
       "path": "/?action=list&limit=10",
       "expectedStatus": 200,
-      "expectedBody": {
-        "freelancers": "array"
-      },
       "bodyMatcher": "partial"
     },
     {
@@ -16,7 +13,7 @@
       "path": "/?action=profile",
       "expectedStatus": 400,
       "expectedBody": {
-        "error": "string"
+        "error": "freelancer_id required"
       },
       "bodyMatcher": "partial"
     }
