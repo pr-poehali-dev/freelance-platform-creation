@@ -454,6 +454,8 @@ const Index = () => {
         freelancers={freelancers}
         topFreelancers={topFreelancers}
         user={user}
+        searchQuery={searchQuery}
+        selectedCategory={selectedCategory}
         onDeleteOrder={handleDeleteOrder}
         onFreelancerClick={setSelectedFreelancer}
         onCreateOrder={handleCreateOrder}

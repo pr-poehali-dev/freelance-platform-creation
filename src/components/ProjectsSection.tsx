@@ -55,6 +55,8 @@ interface ProjectsSectionProps {
   freelancers: Freelancer[];
   topFreelancers: TopFreelancer[];
   user: User | null;
+  searchQuery?: string;
+  selectedCategory?: string;
   onDeleteOrder: (orderId: number) => void;
   onFreelancerClick: (freelancer: Freelancer) => void;
   onCreateOrder: () => void;
@@ -66,11 +68,22 @@ interface ProjectsSectionProps {
   onStartDirectChat: (userId: number, userName: string) => void;
 }
 
+// Карта похожих категорий
+const CATEGORY_SIBLINGS: Record<string, string[]> = {
+  design:      ['marketing', 'video'],
+  development: ['design'],
+  marketing:   ['design', 'writing'],
+  writing:     ['marketing'],
+  video:       ['design', 'marketing'],
+};
+
 const ProjectsSection = ({
   orders,
   freelancers,
   topFreelancers,
   user,
+  searchQuery = '',
+  selectedCategory = 'all',
   onDeleteOrder,
   onFreelancerClick,
   onCreateOrder,
@@ -81,6 +94,39 @@ const ProjectsSection = ({
   onViewFreelancerProfile,
   onStartDirectChat,
 }: ProjectsSectionProps) => {
+  const q = searchQuery.toLowerCase().trim();
+
+  const matchesSearch = (order: Order) => {
+    if (!q) return true;
+    return (
+      order.title.toLowerCase().includes(q) ||
+      order.description.toLowerCase().includes(q) ||
+      order.category.toLowerCase().includes(q)
+    );
+  };
+
+  const matchesCategory = (order: Order) =>
+    selectedCategory === 'all' || order.category === selectedCategory;
+
+  const exactMatches = orders.filter((o) => matchesSearch(o) && matchesCategory(o));
+
+  const hasQuery = q.length > 0 || selectedCategory !== 'all';
+  const noExactResults = hasQuery && exactMatches.length === 0;
+
+  // Похожие заказы: та же категория без текста ИЛИ смежные категории
+  const similarOrders = noExactResults
+    ? orders.filter((o) => {
+        if (selectedCategory !== 'all') {
+          const siblings = CATEGORY_SIBLINGS[selectedCategory] || [];
+          return siblings.includes(o.category);
+        }
+        // Только текстовый поиск без результатов — показываем все остальные
+        return true;
+      }).slice(0, 6)
+    : [];
+
+  const displayOrders = noExactResults ? similarOrders : exactMatches;
+
   return (
     <section id="projects" className="py-12">
       <div className="container mx-auto px-4">
@@ -92,8 +138,16 @@ const ProjectsSection = ({
           </TabsList>
 
           <TabsContent value="projects" className="space-y-4">
+            {noExactResults && (
+              <div className="text-center py-4">
+                <p className="text-muted-foreground text-base mb-1">Заказов на данную тему нет</p>
+                {similarOrders.length > 0 && (
+                  <p className="text-sm text-muted-foreground">Вот заказы из похожих сфер:</p>
+                )}
+              </div>
+            )}
             <div className="grid md:grid-cols-2 gap-6">
-              {orders.map((order) => (
+              {displayOrders.map((order) => (
                 <Card
                   key={order.id}
                   className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 gradient-card"
@@ -182,12 +236,18 @@ const ProjectsSection = ({
                   </CardContent>
                 </Card>
               ))}
-              {orders.length === 0 && (
+              {displayOrders.length === 0 && !noExactResults && (
                 <div className="col-span-2 text-center py-12 text-muted-foreground">
                   <p className="text-lg mb-4">Пока нет активных заказов</p>
                   <Button onClick={onCreateOrder} className="gradient-primary text-white border-0">
                     Разместить первый заказ
                   </Button>
+                </div>
+              )}
+              {noExactResults && similarOrders.length === 0 && (
+                <div className="col-span-2 text-center py-12 text-muted-foreground">
+                  <Icon name="SearchX" size={48} className="mx-auto mb-3 opacity-40" />
+                  <p className="text-lg">Заказов не найдено</p>
                 </div>
               )}
             </div>
