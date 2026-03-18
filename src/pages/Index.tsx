@@ -170,7 +170,7 @@ const Index = () => {
 
   const loadTopFreelancers = async () => {
     try {
-      const response = await fetch('https://functions.poehali.dev/0db794de-963c-4ac1-9537-4f9a94d9ec66?action=list&limit=20');
+      const response = await fetch('https://functions.poehali.dev/0db794de-963c-4ac1-9537-4f9a94d9ec66?action=list&limit=4');
       const data = await response.json();
       setTopFreelancers(data.freelancers || []);
     } catch (error) {

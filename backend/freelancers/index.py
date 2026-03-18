@@ -54,6 +54,7 @@ def handler(event: dict, context) -> dict:
                 f.created_at
             FROM t_p96553691_freelance_platform_c.freelancers f
             JOIN t_p96553691_freelance_platform_c.users u ON f.user_id = u.id
+            WHERE f.rating > 0
             ORDER BY f.rating DESC, f.completed_projects DESC
             LIMIT {limit}
         """)
