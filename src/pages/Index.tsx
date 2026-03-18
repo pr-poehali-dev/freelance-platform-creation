@@ -11,6 +11,7 @@ import ResponseDialog from '@/components/ResponseDialog';
 import OrderResponsesDialog from '@/components/OrderResponsesDialog';
 import FreelancerProfileDialog from '@/components/FreelancerProfileDialog';
 import WalletDialog from '@/components/WalletDialog';
+import DirectChatDialog from '@/components/DirectChatDialog';
 
 interface User {
   id: number;
@@ -86,6 +87,8 @@ const Index = () => {
   const [showFreelancerProfileDialog, setShowFreelancerProfileDialog] = useState(false);
   const [selectedFreelancerId, setSelectedFreelancerId] = useState<number | null>(null);
   const [showWalletDialog, setShowWalletDialog] = useState(false);
+  const [showDirectChatDialog, setShowDirectChatDialog] = useState(false);
+  const [directChatUser, setDirectChatUser] = useState<{ id: number; name: string } | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -303,15 +306,20 @@ const Index = () => {
       setShowAuthDialog(true);
       return;
     }
-    
     const freelancer = topFreelancers.find(f => f.user_id === userId);
-    if (freelancer) {
-      setActiveChatId(null);
-      setActiveChatUser({ id: userId, name: freelancer.name });
-      setActiveChatOrderId(null);
-      setShowChatDialog(true);
-      setShowFreelancerProfileDialog(false);
+    const name = freelancer?.name || 'Фрилансер';
+    setDirectChatUser({ id: userId, name });
+    setShowDirectChatDialog(true);
+    setShowFreelancerProfileDialog(false);
+  };
+
+  const handleStartDirectChat = (userId: number, userName: string) => {
+    if (!user) {
+      setShowAuthDialog(true);
+      return;
     }
+    setDirectChatUser({ id: userId, name: userName });
+    setShowDirectChatDialog(true);
   };
 
   const categories = [
@@ -454,6 +462,7 @@ const Index = () => {
         onRespondToOrder={handleRespondToOrder}
         onViewResponses={handleViewResponses}
         onViewFreelancerProfile={handleViewFreelancerProfile}
+        onStartDirectChat={handleStartDirectChat}
       />
 
       <Dialogs
@@ -538,6 +547,16 @@ const Index = () => {
           userId={user.id}
           initialBalance={user.balance || 0}
           onBalanceUpdate={handleBalanceUpdate}
+        />
+      )}
+
+      {user && directChatUser && (
+        <DirectChatDialog
+          open={showDirectChatDialog}
+          onOpenChange={setShowDirectChatDialog}
+          otherUserId={directChatUser.id}
+          otherUserName={directChatUser.name}
+          currentUserId={user.id}
         />
       )}
 

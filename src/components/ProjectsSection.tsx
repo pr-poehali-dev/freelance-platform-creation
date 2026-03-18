@@ -63,6 +63,7 @@ interface ProjectsSectionProps {
   onRespondToOrder: (orderId: number, orderTitle: string) => void;
   onViewResponses: (orderId: number, orderTitle: string) => void;
   onViewFreelancerProfile: (freelancerId: number) => void;
+  onStartDirectChat: (userId: number, userName: string) => void;
 }
 
 const ProjectsSection = ({
@@ -78,6 +79,7 @@ const ProjectsSection = ({
   onRespondToOrder,
   onViewResponses,
   onViewFreelancerProfile,
+  onStartDirectChat,
 }: ProjectsSectionProps) => {
   return (
     <section id="projects" className="py-12">
@@ -244,16 +246,31 @@ const ProjectsSection = ({
                       <span className="text-lg font-bold text-gradient">
                         {freelancer.hourly_rate ? `${freelancer.hourly_rate.toLocaleString()} ₽/час` : 'Договорная'}
                       </span>
-                      <Button 
-                        size="sm" 
-                        className="gradient-primary text-white border-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onViewFreelancerProfile(freelancer.id);
-                        }}
-                      >
-                        Профиль
-                      </Button>
+                      <div className="flex gap-2">
+                        {user && user.id !== freelancer.user_id && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onStartDirectChat(freelancer.user_id, freelancer.name);
+                            }}
+                          >
+                            <Icon name="MessageCircle" size={14} className="mr-1" />
+                            Написать
+                          </Button>
+                        )}
+                        <Button 
+                          size="sm" 
+                          className="gradient-primary text-white border-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onViewFreelancerProfile(freelancer.id);
+                          }}
+                        >
+                          Профиль
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
