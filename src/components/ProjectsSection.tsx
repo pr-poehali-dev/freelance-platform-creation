@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import type { SortOrder } from '@/components/HeroSection';
 
 interface User {
   id: number;
@@ -57,6 +58,7 @@ interface ProjectsSectionProps {
   user: User | null;
   searchQuery?: string;
   selectedCategory?: string;
+  sortOrder?: SortOrder;
   onDeleteOrder: (orderId: number) => void;
   onFreelancerClick: (freelancer: Freelancer) => void;
   onCreateOrder: () => void;
@@ -84,6 +86,7 @@ const ProjectsSection = ({
   user,
   searchQuery = '',
   selectedCategory = 'all',
+  sortOrder = 'newest',
   onDeleteOrder,
   onFreelancerClick,
   onCreateOrder,
@@ -108,21 +111,32 @@ const ProjectsSection = ({
   const matchesCategory = (order: Order) =>
     selectedCategory === 'all' || order.category === selectedCategory;
 
-  const exactMatches = orders.filter((o) => matchesSearch(o) && matchesCategory(o));
+  const sortFn = (a: Order, b: Order): number => {
+    if (sortOrder === 'newest') return (b.id ?? 0) - (a.id ?? 0);
+    if (sortOrder === 'oldest') return (a.id ?? 0) - (b.id ?? 0);
+    if (sortOrder === 'budget_desc') return ((b.budget_max ?? 0) - (a.budget_max ?? 0));
+    if (sortOrder === 'budget_asc') return ((a.budget_min ?? 0) - (b.budget_min ?? 0));
+    if (sortOrder === 'deadline') {
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    }
+    return 0;
+  };
+
+  const exactMatches = orders.filter((o) => matchesSearch(o) && matchesCategory(o)).sort(sortFn);
 
   const hasQuery = q.length > 0 || selectedCategory !== 'all';
   const noExactResults = hasQuery && exactMatches.length === 0;
 
-  // Похожие заказы: та же категория без текста ИЛИ смежные категории
   const similarOrders = noExactResults
     ? orders.filter((o) => {
         if (selectedCategory !== 'all') {
           const siblings = CATEGORY_SIBLINGS[selectedCategory] || [];
           return siblings.includes(o.category);
         }
-        // Только текстовый поиск без результатов — показываем все остальные
         return true;
-      }).slice(0, 6)
+      }).sort(sortFn).slice(0, 6)
     : [];
 
   const displayOrders = noExactResults ? similarOrders : exactMatches;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
-import HeroSection from '@/components/HeroSection';
+import HeroSection, { SortOrder } from '@/components/HeroSection';
 import ProjectsSection from '@/components/ProjectsSection';
 import Dialogs from '@/components/Dialogs';
 import ChatDialog from '@/components/ChatDialog';
@@ -89,6 +89,9 @@ const Index = () => {
   const [showWalletDialog, setShowWalletDialog] = useState(false);
   const [showDirectChatDialog, setShowDirectChatDialog] = useState(false);
   const [directChatUser, setDirectChatUser] = useState<{ id: number; name: string } | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  const [appliedSearch, setAppliedSearch] = useState('');
+  const [appliedCategory, setAppliedCategory] = useState('all');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -444,9 +447,18 @@ const Index = () => {
       <HeroSection
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onSearchSubmit={() => {
+          setAppliedSearch(searchQuery);
+          setAppliedCategory(selectedCategory);
+        }}
         categories={categories}
         selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        onCategoryChange={(cat) => {
+          setSelectedCategory(cat);
+          setAppliedCategory(cat);
+        }}
+        sortOrder={sortOrder}
+        onSortChange={setSortOrder}
       />
 
       <ProjectsSection
@@ -454,8 +466,9 @@ const Index = () => {
         freelancers={freelancers}
         topFreelancers={topFreelancers}
         user={user}
-        searchQuery={searchQuery}
-        selectedCategory={selectedCategory}
+        searchQuery={appliedSearch}
+        selectedCategory={appliedCategory}
+        sortOrder={sortOrder}
         onDeleteOrder={handleDeleteOrder}
         onFreelancerClick={setSelectedFreelancer}
         onCreateOrder={handleCreateOrder}
