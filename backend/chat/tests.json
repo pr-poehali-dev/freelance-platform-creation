@@ -35,6 +35,21 @@
       "bodyMatcher": "partial"
     },
     {
+      "name": "Edit message - missing auth",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "edit",
+        "message_id": 1,
+        "message": "Updated text"
+      },
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
       "name": "Delete chat - missing auth",
       "method": "POST",
       "path": "/",
