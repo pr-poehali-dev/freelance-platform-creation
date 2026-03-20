@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 
 interface Chat {
@@ -25,6 +26,22 @@ interface ChatListDialogProps {
 const ChatListDialog = ({ open, onOpenChange, userId, onOpenChat }: ChatListDialogProps) => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const deleteChat = async (e: React.MouseEvent, chatId: number) => {
+    e.stopPropagation();
+    setDeletingId(chatId);
+    try {
+      await fetch('https://functions.poehali.dev/860360d2-628f-438b-b4af-a6be44d35b25', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-Id': userId.toString() },
+        body: JSON.stringify({ action: 'delete', chat_id: chatId }),
+      });
+      setChats(prev => prev.filter(c => c.chat_id !== chatId));
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   useEffect(() => {
     if (open) {
@@ -90,14 +107,28 @@ const ChatListDialog = ({ open, onOpenChange, userId, onOpenChat }: ChatListDial
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <h4 className="font-semibold truncate">{chat.other_user_name}</h4>
-                        {chat.last_message_time && (
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {new Date(chat.last_message_time).toLocaleDateString('ru-RU', {
-                              day: 'numeric',
-                              month: 'short',
-                            })}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {chat.last_message_time && (
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(chat.last_message_time).toLocaleDateString('ru-RU', {
+                                day: 'numeric',
+                                month: 'short',
+                              })}
+                            </span>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                            onClick={(e) => deleteChat(e, chat.chat_id)}
+                            disabled={deletingId === chat.chat_id}
+                          >
+                            {deletingId === chat.chat_id
+                              ? <Icon name="Loader2" size={14} className="animate-spin" />
+                              : <Icon name="Trash2" size={14} />
+                            }
+                          </Button>
+                        </div>
                       </div>
                       <Badge variant="secondary" className="text-xs mb-2">
                         {chat.order_title}

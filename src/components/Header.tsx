@@ -26,12 +26,6 @@ const Header = ({ user, onShowProfile, onShowAuth, onCreateOrder, onShowChats, o
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gradient">Try-its</h1>
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#projects" className="text-sm font-medium hover:text-primary transition-colors">
-              Заказы
-            </a>
-            <a href="#freelancers" className="text-sm font-medium hover:text-primary transition-colors">
-              Фрилансеры
-            </a>
             {user ? (
               <>
                 <Button 

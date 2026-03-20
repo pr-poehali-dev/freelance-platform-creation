@@ -197,6 +197,36 @@ def handler(event: dict, context) -> dict:
                     'isBase64Encoded': False
                 }
 
+            elif action == 'delete':
+                chat_id = body.get('chat_id')
+                if not chat_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'chat_id обязателен'}),
+                        'isBase64Encoded': False
+                    }
+                cur.execute("""
+                    SELECT id FROM t_p96553691_freelance_platform_c.chats
+                    WHERE id = %s AND (client_id = %s OR freelancer_id = %s)
+                """, (chat_id, user_id, user_id))
+                if not cur.fetchone():
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Нет доступа или чат не найден'}),
+                        'isBase64Encoded': False
+                    }
+                cur.execute("DELETE FROM t_p96553691_freelance_platform_c.messages WHERE chat_id = %s", (chat_id,))
+                cur.execute("DELETE FROM t_p96553691_freelance_platform_c.chats WHERE id = %s", (chat_id,))
+                conn.commit()
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+
             elif action == 'send':
                 chat_id = body.get('chat_id')
                 message = body.get('message', '').strip()
