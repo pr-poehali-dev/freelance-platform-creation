@@ -54,6 +54,7 @@ export const useIndexState = () => {
   const [showUserProfileDialog, setShowUserProfileDialog] = useState(false);
   const [showResponseDialog, setShowResponseDialog] = useState(false);
   const [showOrderResponsesDialog, setShowOrderResponsesDialog] = useState(false);
+  const [showActiveFreelancersDialog, setShowActiveFreelancersDialog] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [selectedOrderTitle, setSelectedOrderTitle] = useState('');
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
@@ -283,6 +284,12 @@ export const useIndexState = () => {
     setShowOrderResponsesDialog(true);
   };
 
+  const handleViewActiveFreelancers = (orderId: number, orderTitle: string) => {
+    setSelectedOrderId(orderId);
+    setSelectedOrderTitle(orderTitle);
+    setShowActiveFreelancersDialog(true);
+  };
+
   const handleResponseSuccess = () => {
     loadOrders();
     if (user?.id) {
@@ -330,6 +337,7 @@ export const useIndexState = () => {
     showUserProfileDialog, setShowUserProfileDialog,
     showResponseDialog, setShowResponseDialog,
     showOrderResponsesDialog, setShowOrderResponsesDialog,
+    showActiveFreelancersDialog, setShowActiveFreelancersDialog,
     selectedOrderId,
     selectedOrderTitle,
     activeChatId,
@@ -363,6 +371,7 @@ export const useIndexState = () => {
     handleOpenChatFromList,
     handleRespondToOrder,
     handleViewResponses,
+    handleViewActiveFreelancers,
     handleResponseSuccess,
     handleViewFreelancerProfile,
     handleStartChatWithFreelancer,

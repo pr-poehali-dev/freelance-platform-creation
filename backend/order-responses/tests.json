@@ -32,6 +32,20 @@
         "error": "string"
       },
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Complete order - missing auth",
+      "method": "PUT",
+      "path": "/",
+      "body": {
+        "response_id": 1,
+        "action": "complete"
+      },
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
     }
   ]
 }
