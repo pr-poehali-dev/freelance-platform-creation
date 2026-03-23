@@ -1,89 +1,14 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import Icon from '@/components/ui/icon';
 import type { SortOrder } from '@/components/HeroSection';
 import type { UserRole } from '@/hooks/useIndexState';
+import type { ProjectsSectionProps, Order } from './projects/projectsSectionTypes';
+import { CATEGORY_SIBLINGS } from './projects/projectsSectionTypes';
+import ActiveOrdersTab from './projects/ActiveOrdersTab';
+import AllOrdersTab from './projects/AllOrdersTab';
+import FreelancerCard from './projects/FreelancerCard';
 
-interface User {
-  id: number;
-  username: string;
-  name: string;
-  email: string;
-}
-
-interface Order {
-  id: number;
-  title: string;
-  description: string;
-  category: string;
-  budget_min?: number;
-  budget_max?: number;
-  deadline?: string;
-  user_id: number;
-  user_name: string;
-}
-
-interface Freelancer {
-  id: number;
-  name: string;
-  role: string;
-  avatar: string;
-  rating: number;
-  reviews: number;
-  completedProjects: number;
-  hourlyRate: string;
-  skills: string[];
-}
-
-interface TopFreelancer {
-  id: number;
-  user_id: number;
-  name: string;
-  username: string;
-  bio: string;
-  hourly_rate: number;
-  avatar_url: string;
-  skills: string[];
-  rating: number;
-  total_reviews: number;
-  completed_projects: number;
-}
-
-interface ProjectsSectionProps {
-  orders: Order[];
-  myOrders?: Order[];
-  respondedOrders?: Order[];
-  freelancers: TopFreelancer[];
-  topFreelancers: TopFreelancer[];
-  user: User | null;
-  searchQuery?: string;
-  selectedCategory?: string;
-  sortOrder?: SortOrder;
-  onDeleteOrder: (orderId: number) => void;
-  onFreelancerClick: (freelancer: TopFreelancer) => void;
-  onCreateOrder: () => void;
-  onViewUserProfile: (userId: number) => void;
-  onStartChat: (userId: number, orderId: number) => void;
-  onRespondToOrder: (orderId: number, orderTitle: string) => void;
-  onViewResponses: (orderId: number, orderTitle: string) => void;
-  onCompleteOrder: (orderId: number) => void;
-  onViewFreelancerProfile: (freelancerId: number) => void;
-  onStartDirectChat: (userId: number, userName: string) => void;
-  userRole?: UserRole;
-}
-
-// Карта похожих категорий
-const CATEGORY_SIBLINGS: Record<string, string[]> = {
-  design:      ['marketing', 'video'],
-  development: ['design'],
-  marketing:   ['design', 'writing'],
-  writing:     ['marketing'],
-  video:       ['design', 'marketing'],
-};
+export type { SortOrder, UserRole };
 
 const ProjectsSection = ({
   orders,
@@ -137,9 +62,7 @@ const ProjectsSection = ({
   };
 
   const sourceOrders = isFreelancer ? respondedOrders : (user ? myOrders : orders);
-
   const exactMatches = sourceOrders.filter((o) => matchesSearch(o) && matchesCategory(o)).sort(sortFn);
-
   const hasQuery = q.length > 0 || selectedCategory !== 'all';
   const noExactResults = hasQuery && exactMatches.length === 0;
 
@@ -172,314 +95,45 @@ const ProjectsSection = ({
           </TabsList>
 
           <TabsContent value="projects" className="space-y-4">
-            {noExactResults && (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground text-base mb-1">Заказов на данную тему нет</p>
-                {similarOrders.length > 0 && (
-                  <p className="text-sm text-muted-foreground">Вот заказы из похожих сфер:</p>
-                )}
-              </div>
-            )}
-            <div className="grid md:grid-cols-2 gap-6">
-              {displayOrders.map((order) => (
-                <Card
-                  key={order.id}
-                  className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 gradient-card"
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Badge className="gradient-primary text-white border-0">
-                          {order.category}
-                        </Badge>
-                        {isFreelancer && order.response_status === 'rejected' ? (
-                          <Badge className="bg-red-500 text-white">Отклонен</Badge>
-                        ) : order.status === 'in_progress' && (
-                          <Badge className="bg-blue-500 text-white">В работе</Badge>
-                        )}
-                      </div>
-                      {order.budget_min && order.budget_max && (
-                        <span className="text-2xl font-bold text-gradient">
-                          {order.budget_min.toLocaleString()} - {order.budget_max.toLocaleString()} ₽
-                        </span>
-                      )}
-                    </div>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                      {order.title}
-                    </CardTitle>
-                    <CardDescription className="text-base">{order.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-4 text-muted-foreground">
-                        {order.deadline && (
-                          <span className="flex items-center gap-1">
-                            <Icon name="Clock" size={16} />
-                            до {new Date(order.deadline).toLocaleDateString('ru-RU')}
-                          </span>
-                        )}
-                        <button
-                          className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
-                          onClick={() => onViewUserProfile(order.user_id)}
-                        >
-                          <Icon name="User" size={16} />
-                          {order.user_name}
-                        </button>
-                      </div>
-                      <div className="flex gap-2">
-                        {user && user.id === order.user_id ? (
-                          <>
-                            {order.status === 'in_progress' ? (
-                              <Button
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700 text-white border-0"
-                                onClick={() => onCompleteOrder(order.id)}
-                              >
-                                <Icon name="CheckCircle" size={16} className="mr-1" />
-                                Подтвердить выполнение
-                              </Button>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => onViewResponses(order.id, order.title)}
-                              >
-                                <Icon name="Users" size={16} className="mr-1" />
-                                Отклики
-                              </Button>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => onDeleteOrder(order.id)}
-                            >
-                              <Icon name="Trash2" size={16} className="mr-1" />
-                              Удалить
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => user ? onStartChat(order.user_id, order.id) : null}
-                              disabled={!user}
-                            >
-                              <Icon name="MessageCircle" size={16} className="mr-1" />
-                              Написать
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              className="gradient-primary text-white border-0"
-                              onClick={() => user ? onRespondToOrder(order.id, order.title) : null}
-                              disabled={!user}
-                            >
-                              Откликнуться
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Плашка техподдержки */}
-                    <div className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm">
-                      <div className="flex items-center gap-2 text-amber-700">
-                        <Icon name="HeadphonesIcon" size={15} />
-                        <span className="font-medium">Нужна помощь с заказом?</span>
-                        <span className="text-amber-600 hidden sm:inline">Наша техподдержка поможет</span>
-                      </div>
-                      <span className="flex items-center gap-1 text-amber-700 font-semibold whitespace-nowrap opacity-50 cursor-not-allowed">
-                        <Icon name="MessageSquare" size={14} />
-                        Написать
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {displayOrders.length === 0 && !noExactResults && (
-                <div className="col-span-2 text-center py-12 text-muted-foreground">
-                  <p className="text-lg mb-4">
-                    {isFreelancer ? 'Вы ещё не откликались на заказы' : 'Пока нет активных заказов'}
-                  </p>
-                  {isFreelancer ? (
-                    <Button onClick={() => setActiveTab('all-orders')} className="gradient-primary text-white border-0">
-                      Найти первый заказ
-                    </Button>
-                  ) : (
-                    <Button onClick={onCreateOrder} className="gradient-primary text-white border-0">
-                      Разместить первый заказ
-                    </Button>
-                  )}
-                </div>
-              )}
-              {noExactResults && similarOrders.length === 0 && (
-                <div className="col-span-2 text-center py-12 text-muted-foreground">
-                  <Icon name="SearchX" size={48} className="mx-auto mb-3 opacity-40" />
-                  <p className="text-lg">Заказов не найдено</p>
-                </div>
-              )}
-            </div>
+            <ActiveOrdersTab
+              displayOrders={displayOrders}
+              noExactResults={noExactResults}
+              similarOrders={similarOrders}
+              isFreelancer={isFreelancer}
+              user={user}
+              onCreateOrder={onCreateOrder}
+              onSetActiveTab={setActiveTab}
+              onViewUserProfile={onViewUserProfile}
+              onStartChat={onStartChat}
+              onRespondToOrder={onRespondToOrder}
+              onViewResponses={onViewResponses}
+              onCompleteOrder={onCompleteOrder}
+              onDeleteOrder={onDeleteOrder}
+            />
           </TabsContent>
 
           <TabsContent value="all-orders" className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-6">
-              {orders.filter((o) => o.status !== 'in_progress' || respondedOrders.some((r) => r.id === o.id)).sort((a, b) => (b.id ?? 0) - (a.id ?? 0)).map((order) => {
-                const alreadyResponded = respondedOrders.some((r) => r.id === order.id);
-                return (
-                <Card
-                  key={order.id}
-                  className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 gradient-card"
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between mb-2">
-                      <Badge className="gradient-primary text-white border-0">{order.category}</Badge>
-                      {order.budget_min && order.budget_max && (
-                        <span className="text-2xl font-bold text-gradient">
-                          {order.budget_min.toLocaleString()} - {order.budget_max.toLocaleString()} ₽
-                        </span>
-                      )}
-                    </div>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                      {order.title}
-                    </CardTitle>
-                    <CardDescription className="text-base">{order.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-4 text-muted-foreground">
-                        {order.deadline && (
-                          <span className="flex items-center gap-1">
-                            <Icon name="Clock" size={16} />
-                            до {new Date(order.deadline).toLocaleDateString('ru-RU')}
-                          </span>
-                        )}
-                        <button
-                          className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
-                          onClick={() => onViewUserProfile(order.user_id)}
-                        >
-                          <Icon name="User" size={16} />
-                          {order.user_name}
-                        </button>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => user ? onStartChat(order.user_id, order.id) : null}
-                          disabled={!user}
-                        >
-                          <Icon name="MessageCircle" size={16} className="mr-1" />
-                          Написать
-                        </Button>
-                        {alreadyResponded ? (
-                          <Button size="sm" variant="outline" disabled>
-                            Откликнулся
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            className="gradient-primary text-white border-0"
-                            onClick={() => user ? onRespondToOrder(order.id, order.title) : null}
-                            disabled={!user}
-                          >
-                            Откликнуться
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                );
-              })}
-              {orders.length === 0 && (
-                <div className="col-span-2 text-center py-12 text-muted-foreground">
-                  <p className="text-lg">Заказов пока нет</p>
-                </div>
-              )}
-            </div>
+            <AllOrdersTab
+              orders={orders}
+              respondedOrders={respondedOrders}
+              user={user}
+              onViewUserProfile={onViewUserProfile}
+              onStartChat={onStartChat}
+              onRespondToOrder={onRespondToOrder}
+            />
           </TabsContent>
 
           <TabsContent value="top" className="space-y-4">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {topFreelancers.map((freelancer) => (
-                <Card
+                <FreelancerCard
                   key={freelancer.id}
-                  className="group hover:shadow-xl transition-all duration-300 cursor-pointer gradient-card border-2 hover:border-primary/20"
-                  onClick={() => onViewFreelancerProfile(freelancer.id)}
-                >
-                  <CardHeader>
-                    <div className="flex items-center gap-4 mb-3">
-                      <Avatar className="w-16 h-16 border-4 border-primary/20">
-                        <AvatarImage src={freelancer.avatar_url} />
-                        <AvatarFallback className="gradient-primary text-white text-xl font-bold">
-                          {freelancer.name.split(' ').map((n: string) => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg mb-1">{freelancer.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">@{freelancer.username}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm mb-3">
-                      <div className="flex items-center gap-1">
-                        <Icon name="Star" size={16} className="fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold">{Number(freelancer.rating).toFixed(1)}</span>
-                        <span className="text-muted-foreground">({freelancer.total_reviews})</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Icon name="Briefcase" size={16} />
-                        <span>{freelancer.completed_projects}</span>
-                      </div>
-                    </div>
-                    {freelancer.bio && (
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{freelancer.bio}</p>
-                    )}
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {freelancer.skills && freelancer.skills.slice(0, 3).map((skill: string) => (
-                        <Badge key={skill} variant="secondary" className="text-xs">
-                          {skill}
-                        </Badge>
-                      ))}
-                      {freelancer.skills && freelancer.skills.length > 3 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{freelancer.skills.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-gradient">
-                        {freelancer.hourly_rate ? `${freelancer.hourly_rate.toLocaleString()} ₽/час` : 'Договорная'}
-                      </span>
-                      <div className="flex gap-2">
-                        {user && user.id !== freelancer.user_id && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onStartDirectChat(freelancer.user_id, freelancer.name);
-                            }}
-                          >
-                            <Icon name="MessageCircle" size={14} className="mr-1" />
-                            Написать
-                          </Button>
-                        )}
-                        <Button 
-                          size="sm" 
-                          className="gradient-primary text-white border-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onViewFreelancerProfile(freelancer.id);
-                          }}
-                        >
-                          Профиль
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  freelancer={freelancer}
+                  user={user}
+                  variant="top"
+                  onViewFreelancerProfile={onViewFreelancerProfile}
+                  onStartDirectChat={onStartDirectChat}
+                />
               ))}
             </div>
             {topFreelancers.length === 0 && (
@@ -492,67 +146,17 @@ const ProjectsSection = ({
           <TabsContent value="freelancers" className="space-y-4">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {freelancers.map((freelancer) => (
-                <Card
+                <FreelancerCard
                   key={freelancer.id}
-                  className="group hover:shadow-xl transition-all duration-300 cursor-pointer gradient-card border-2 hover:border-primary/20"
-                  onClick={() => onViewFreelancerProfile(freelancer.id)}
-                >
-                  <CardHeader>
-                    <div className="flex items-center gap-4 mb-3">
-                      <Avatar className="w-16 h-16 border-4 border-primary/20">
-                        <AvatarImage src={freelancer.avatar_url} />
-                        <AvatarFallback className="gradient-primary text-white text-xl font-bold">
-                          {freelancer.name.split(' ').map((n: string) => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg mb-1">{freelancer.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">@{freelancer.username}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm mb-3">
-                      <div className="flex items-center gap-1">
-                        <Icon name="Star" size={16} className="fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold">{Number(freelancer.rating).toFixed(1)}</span>
-                        <span className="text-muted-foreground">({freelancer.total_reviews})</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Icon name="Briefcase" size={16} />
-                        <span>{freelancer.completed_projects} проектов</span>
-                      </div>
-                    </div>
-                    {freelancer.skills && freelancer.skills.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {freelancer.skills.slice(0, 3).map((skill: string) => (
-                          <Badge key={skill} variant="secondary" className="text-xs">
-                            {skill}
-                          </Badge>
-                        ))}
-                        {freelancer.skills.length > 3 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{freelancer.skills.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-gradient">
-                        {freelancer.hourly_rate ? `от ${freelancer.hourly_rate.toLocaleString()} ₽/ч` : ''}
-                      </span>
-                      <Button size="sm" className="gradient-primary text-white border-0"
-                        onClick={(e) => { e.stopPropagation(); onStartDirectChat(freelancer.user_id, freelancer.name); }}
-                      >
-                        Написать
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                  freelancer={freelancer}
+                  user={user}
+                  variant="all"
+                  onViewFreelancerProfile={onViewFreelancerProfile}
+                  onStartDirectChat={onStartDirectChat}
+                />
               ))}
               {freelancers.length === 0 && (
                 <div className="col-span-3 text-center py-12 text-muted-foreground">
-                  <Icon name="Users" size={48} className="mx-auto mb-3 opacity-30" />
                   <p className="text-lg">Пока нет фрилансеров с отзывами</p>
                 </div>
               )}
