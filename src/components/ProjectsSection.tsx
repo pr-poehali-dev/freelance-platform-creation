@@ -306,7 +306,9 @@ const ProjectsSection = ({
 
           <TabsContent value="all-orders" className="space-y-4">
             <div className="grid md:grid-cols-2 gap-6">
-              {orders.sort((a, b) => (b.id ?? 0) - (a.id ?? 0)).map((order) => (
+              {orders.sort((a, b) => (b.id ?? 0) - (a.id ?? 0)).map((order) => {
+                const alreadyResponded = respondedOrders.some((r) => r.id === order.id);
+                return (
                 <Card
                   key={order.id}
                   className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 gradient-card"
@@ -352,19 +354,26 @@ const ProjectsSection = ({
                           <Icon name="MessageCircle" size={16} className="mr-1" />
                           Написать
                         </Button>
-                        <Button
-                          size="sm"
-                          className="gradient-primary text-white border-0"
-                          onClick={() => user ? onRespondToOrder(order.id, order.title) : null}
-                          disabled={!user}
-                        >
-                          Откликнуться
-                        </Button>
+                        {alreadyResponded ? (
+                          <Button size="sm" variant="outline" disabled>
+                            Откликнулся
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            className="gradient-primary text-white border-0"
+                            onClick={() => user ? onRespondToOrder(order.id, order.title) : null}
+                            disabled={!user}
+                          >
+                            Откликнуться
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+                );
+              })}
               {orders.length === 0 && (
                 <div className="col-span-2 text-center py-12 text-muted-foreground">
                   <p className="text-lg">Заказов пока нет</p>
