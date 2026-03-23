@@ -7,6 +7,7 @@ import IndexChatDialogs from '@/components/IndexChatDialogs';
 import IndexOrderDialogs from '@/components/IndexOrderDialogs';
 import ReviewDialog from '@/components/ReviewDialog';
 import { useIndexState } from '@/hooks/useIndexState';
+import { useTheme } from '@/hooks/useTheme';
 import { categories, projects, freelancers } from '@/data/indexStaticData';
 
 interface Freelancer {
@@ -26,13 +27,14 @@ interface Freelancer {
 const Index = () => {
   const [selectedFreelancer, setSelectedFreelancer] = useState<Freelancer | null>(null);
   const s = useIndexState();
+  const { theme, setTheme } = useTheme();
 
   const filteredProjects = s.appliedCategory === 'all'
     ? projects
     : projects.filter(p => p.category === s.appliedCategory);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-pink-50/30">
+    <div className="min-h-screen bg-background transition-colors duration-300">
       <Header
         user={s.user}
         userRole={s.userRole}
@@ -42,6 +44,8 @@ const Index = () => {
         onCreateOrder={s.handleCreateOrder}
         onShowChats={() => s.setShowChatListDialog(true)}
         onShowWallet={() => s.setShowWalletDialog(true)}
+        theme={theme}
+        onThemeChange={setTheme}
       />
 
       <HeroSection

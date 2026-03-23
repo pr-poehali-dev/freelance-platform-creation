@@ -112,9 +112,63 @@
   }
 }
 
+/* Тёмная тема */
+.theme-dark {
+  --background: 224 28% 8%;
+  --foreground: 210 40% 95%;
+  --card: 224 25% 12%;
+  --card-foreground: 210 40% 95%;
+  --popover: 224 25% 12%;
+  --popover-foreground: 210 40% 95%;
+  --primary: 262 83% 65%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 224 20% 18%;
+  --secondary-foreground: 210 40% 95%;
+  --muted: 224 20% 16%;
+  --muted-foreground: 215 20% 60%;
+  --accent: 330 75% 60%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 62% 40%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 224 20% 20%;
+  --input: 224 20% 18%;
+  --ring: 262 83% 65%;
+}
+
+/* Яндекс-тема: чёрно-жёлтая */
+.theme-yandex {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 8%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 8%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 8%;
+  --primary: 48 100% 50%;
+  --primary-foreground: 0 0% 8%;
+  --secondary: 0 0% 95%;
+  --secondary-foreground: 0 0% 8%;
+  --muted: 0 0% 95%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 48 100% 50%;
+  --accent-foreground: 0 0% 8%;
+  --destructive: 0 84% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 88%;
+  --input: 0 0% 88%;
+  --ring: 48 100% 50%;
+}
+
 @layer utilities {
   .gradient-primary {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  }
+
+  .theme-dark .gradient-primary {
+    background: linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #db2777 100%);
+  }
+
+  .theme-yandex .gradient-primary {
+    background: #ffcc00;
   }
 
   .gradient-card {
@@ -126,10 +180,30 @@
     );
   }
 
+  .theme-yandex .gradient-card {
+    background: rgba(255, 204, 0, 0.1);
+  }
+
   .text-gradient {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  .theme-dark .text-gradient {
+    background: linear-gradient(135deg, #a78bfa 0%, #c084fc 50%, #f472b6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .theme-yandex .text-gradient {
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: #1a1a1a;
+    background-clip: unset;
+    color: #1a1a1a;
+    font-weight: 900;
   }
 }
