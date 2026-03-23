@@ -158,6 +158,23 @@ def handler(event: dict, context) -> dict:
             """, (int(completed_order_id), user_id, reviewee_id, role, int(rating), comment or None))
 
             new_review = dict(cur.fetchone())
+
+            if role == 'client':
+                cur.execute(f"""
+                    UPDATE {SCHEMA}.freelancers f
+                    SET
+                        rating = COALESCE(stats.avg_rating, 0),
+                        total_reviews = COALESCE(stats.review_count, 0)
+                    FROM (
+                        SELECT
+                            ROUND(AVG(rating)::numeric, 2) AS avg_rating,
+                            COUNT(*) AS review_count
+                        FROM {SCHEMA}.order_reviews
+                        WHERE reviewee_id = %s AND role = 'client'
+                    ) stats
+                    WHERE f.user_id = %s
+                """, (reviewee_id, reviewee_id))
+
             conn.commit()
             new_review['created_at'] = new_review['created_at'].isoformat()
             return resp(201, {'success': True, 'review': new_review})

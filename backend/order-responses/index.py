@@ -223,10 +223,13 @@ def handler(event: dict, context) -> dict:
 
                 if order['executor_id']:
                     cur.execute("""
-                        UPDATE t_p96553691_freelance_platform_c.freelancers
-                        SET completed_projects = completed_projects + 1
-                        WHERE user_id = %s
-                    """, (order['executor_id'],))
+                        UPDATE t_p96553691_freelance_platform_c.freelancers f
+                        SET completed_projects = (
+                            SELECT COUNT(*) FROM t_p96553691_freelance_platform_c.completed_orders
+                            WHERE executor_id = %s
+                        ) + 1
+                        WHERE f.user_id = %s
+                    """, (order['executor_id'], order['executor_id']))
 
                 cur.execute("""
                     DELETE FROM t_p96553691_freelance_platform_c.order_responses WHERE order_id = %s
