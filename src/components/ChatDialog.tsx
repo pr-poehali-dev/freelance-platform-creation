@@ -62,6 +62,14 @@ const ChatDialog = ({ open, onOpenChange, chatId, otherUser, currentUserId, orde
   }, [open, chatId, otherUser, orderId]);
 
   useEffect(() => {
+    if (!open || !activeChatId) return;
+    const interval = setInterval(() => {
+      loadMessages(activeChatId);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [open, activeChatId]);
+
+  useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }

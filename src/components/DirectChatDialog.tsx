@@ -53,6 +53,14 @@ const DirectChatDialog = ({
   }, [open, otherUserId]);
 
   useEffect(() => {
+    if (!open || !chatId) return;
+    const interval = setInterval(() => {
+      loadMessages(chatId);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [open, chatId]);
+
+  useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }

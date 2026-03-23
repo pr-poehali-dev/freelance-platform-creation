@@ -250,14 +250,20 @@ export const useIndexState = () => {
       setShowAuthDialog(true);
       return;
     }
-    const order = orders.find(o => o.id === orderId);
-    if (order) {
-      setActiveChatId(null);
-      setActiveChatUser({ id: userId, name: order.user_name });
-      setActiveChatOrderId(orderId);
-      setShowChatDialog(true);
-      setShowUserProfileDialog(false);
-    }
+    const order =
+      orders.find(o => o.id === orderId) ||
+      myOrders.find(o => o.id === orderId) ||
+      respondedOrders.find(o => o.id === orderId);
+
+    const otherUserName = order
+      ? (userId === order.user_id ? order.user_name : (order.executor_name || 'Пользователь'))
+      : 'Пользователь';
+
+    setActiveChatId(null);
+    setActiveChatUser({ id: userId, name: otherUserName });
+    setActiveChatOrderId(orderId);
+    setShowChatDialog(true);
+    setShowUserProfileDialog(false);
   };
 
   const handleOpenChatFromList = (chatId: number, otherUserId: number, otherUserName: string) => {
