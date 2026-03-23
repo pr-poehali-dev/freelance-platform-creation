@@ -55,6 +55,13 @@ export const useIndexState = () => {
   const [showUserProfileDialog, setShowUserProfileDialog] = useState(false);
   const [showResponseDialog, setShowResponseDialog] = useState(false);
   const [showOrderResponsesDialog, setShowOrderResponsesDialog] = useState(false);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [reviewData, setReviewData] = useState<{
+    completedOrderId: number;
+    orderTitle: string;
+    revieweeName: string;
+    role: 'client' | 'freelancer';
+  } | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [selectedOrderTitle, setSelectedOrderTitle] = useState('');
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
@@ -217,6 +224,15 @@ export const useIndexState = () => {
         toast({ title: 'Заказ выполнен!', description: 'Заказ сохранён в историю выполненных' });
         loadOrders();
         if (user?.id) loadMyOrders(user.id);
+        if (data.completed_order_id && data.executor_name) {
+          setReviewData({
+            completedOrderId: data.completed_order_id,
+            orderTitle: data.order_title,
+            revieweeName: data.executor_name,
+            role: 'client',
+          });
+          setShowReviewDialog(true);
+        }
       } else {
         toast({ title: 'Ошибка', description: data.error || 'Не удалось завершить заказ', variant: 'destructive' });
       }
@@ -359,6 +375,8 @@ export const useIndexState = () => {
     showUserProfileDialog, setShowUserProfileDialog,
     showResponseDialog, setShowResponseDialog,
     showOrderResponsesDialog, setShowOrderResponsesDialog,
+    showReviewDialog, setShowReviewDialog,
+    reviewData,
     selectedOrderId,
     selectedOrderTitle,
     activeChatId,

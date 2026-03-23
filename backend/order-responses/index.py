@@ -212,12 +212,14 @@ def handler(event: dict, context) -> dict:
                         (order_id, title, description, category, budget_min, budget_max,
                          client_id, client_name, executor_id, executor_name)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
                 """, (
                     order['id'], order['title'], order['description'], order['category'],
                     order['budget_min'], order['budget_max'],
                     order['user_id'], order['client_name'],
                     order['executor_id'], order['executor_name']
                 ))
+                completed_order_id = cur.fetchone()['id']
 
                 if order['executor_id']:
                     cur.execute("""
@@ -237,7 +239,14 @@ def handler(event: dict, context) -> dict:
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'success': True, 'message': 'Заказ подтверждён и сохранён в историю'}),
+                    'body': json.dumps({
+                        'success': True,
+                        'message': 'Заказ подтверждён и сохранён в историю',
+                        'completed_order_id': completed_order_id,
+                        'executor_id': order['executor_id'],
+                        'executor_name': order['executor_name'],
+                        'order_title': order['title'],
+                    }),
                     'isBase64Encoded': False
                 }
 

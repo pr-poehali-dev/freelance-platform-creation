@@ -5,6 +5,7 @@ import ProjectsSection from '@/components/ProjectsSection';
 import Dialogs from '@/components/Dialogs';
 import IndexChatDialogs from '@/components/IndexChatDialogs';
 import IndexOrderDialogs from '@/components/IndexOrderDialogs';
+import ReviewDialog from '@/components/ReviewDialog';
 import { useIndexState } from '@/hooks/useIndexState';
 import { categories, projects, freelancers } from '@/data/indexStaticData';
 
@@ -136,6 +137,19 @@ const Index = () => {
         onStartChatWithFreelancer={s.handleStartChatWithFreelancer}
         onBalanceUpdate={s.handleBalanceUpdate}
       />
+
+      {s.user && s.reviewData && (
+        <ReviewDialog
+          open={s.showReviewDialog}
+          onOpenChange={s.setShowReviewDialog}
+          completedOrderId={s.reviewData.completedOrderId}
+          orderTitle={s.reviewData.orderTitle}
+          revieweeName={s.reviewData.revieweeName}
+          currentUserId={s.user.id}
+          role={s.reviewData.role}
+          onReviewSubmitted={() => {}}
+        />
+      )}
 
       <footer className="bg-slate-900 text-white py-12 mt-20">
         <div className="container mx-auto px-4">

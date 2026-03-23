@@ -1,8 +1,12 @@
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import Icon from '@/components/ui/icon';
+
+const REVIEWS_URL = 'https://functions.poehali.dev/44b24f74-a364-4f56-9258-45c0c88b94e5';
 
 interface User {
   id: number;
@@ -20,6 +24,16 @@ interface Order {
   created_at: string;
 }
 
+interface Review {
+  id: number;
+  rating: number;
+  comment: string | null;
+  role: 'client' | 'freelancer';
+  reviewer_name: string;
+  order_title: string;
+  created_at: string;
+}
+
 interface UserProfileDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -29,6 +43,19 @@ interface UserProfileDialogProps {
   onStartChat: (userId: number, orderId: number) => void;
 }
 
+const Stars = ({ rating }: { rating: number }) => (
+  <div className="flex gap-0.5">
+    {[1, 2, 3, 4, 5].map((s) => (
+      <Icon
+        key={s}
+        name="Star"
+        size={14}
+        className={s <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}
+      />
+    ))}
+  </div>
+);
+
 const UserProfileDialog = ({
   open,
   onOpenChange,
@@ -37,6 +64,23 @@ const UserProfileDialog = ({
   userOrders,
   onStartChat,
 }: UserProfileDialogProps) => {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (open && user?.id) {
+      fetch(`${REVIEWS_URL}?user_id=${user.id}`, {
+        headers: { 'X-User-Id': (currentUser?.id || user.id).toString() },
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          setReviews(data.reviews || []);
+          setAvgRating(data.avg_rating ?? null);
+        })
+        .catch(() => {});
+    }
+  }, [open, user?.id]);
+
   if (!user) return null;
 
   return (
@@ -55,9 +99,16 @@ const UserProfileDialog = ({
             </Avatar>
             <div className="flex-1">
               <h3 className="text-2xl font-bold mb-1">{user.name}</h3>
-              <p className="text-muted-foreground mb-3">@{user.username}</p>
+              <p className="text-muted-foreground mb-2">@{user.username}</p>
+              {avgRating !== null && (
+                <div className="flex items-center gap-2 mb-2">
+                  <Stars rating={Math.round(avgRating)} />
+                  <span className="text-sm font-semibold">{avgRating.toFixed(1)}</span>
+                  <span className="text-sm text-muted-foreground">({reviews.length} отзыв{reviews.length === 1 ? '' : reviews.length < 5 ? 'а' : 'ов'})</span>
+                </div>
+              )}
               {user.email && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Icon name="Mail" size={16} />
                   <span>{user.email}</span>
                 </div>
@@ -71,7 +122,7 @@ const UserProfileDialog = ({
             </h4>
             <div className="space-y-3">
               {userOrders.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
+                <p className="text-center text-muted-foreground py-4">
                   У пользователя пока нет активных заказов
                 </p>
               ) : (
@@ -108,6 +159,34 @@ const UserProfileDialog = ({
               )}
             </div>
           </div>
+
+          {reviews.length > 0 && (
+            <div>
+              <h4 className="text-lg font-semibold mb-3">Отзывы ({reviews.length})</h4>
+              <ScrollArea className="max-h-64">
+                <div className="space-y-3 pr-2">
+                  {reviews.map((rv) => (
+                    <div key={rv.id} className="border rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-1">
+                        <div>
+                          <span className="font-medium text-sm">{rv.reviewer_name}</span>
+                          <span className="text-xs text-muted-foreground ml-2">
+                            {rv.role === 'client' ? 'заказчик' : 'исполнитель'}
+                          </span>
+                        </div>
+                        <Stars rating={rv.rating} />
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-1">{rv.order_title}</p>
+                      {rv.comment && <p className="text-sm">{rv.comment}</p>}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(rv.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
 
           {currentUser && currentUser.id !== user.id && userOrders.length > 0 && (
             <div className="pt-4 border-t">
