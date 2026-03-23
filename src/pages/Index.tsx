@@ -34,6 +34,8 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-pink-50/30">
       <Header
         user={s.user}
+        userRole={s.userRole}
+        onRoleChange={s.handleRoleChange}
         onShowProfile={() => s.setShowProfileDialog(true)}
         onShowAuth={() => s.setShowAuthDialog(true)}
         onCreateOrder={s.handleCreateOrder}
@@ -75,6 +77,7 @@ const Index = () => {
         onViewResponses={s.handleViewResponses}
         onViewFreelancerProfile={s.handleViewFreelancerProfile}
         onStartDirectChat={s.handleStartDirectChat}
+        userRole={s.userRole}
       />
 
       <Dialogs

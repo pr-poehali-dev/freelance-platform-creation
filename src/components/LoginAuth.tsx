@@ -4,16 +4,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
+import type { UserRole } from '@/hooks/useIndexState';
 
 interface User {
   id: number;
   username: string;
   name: string;
   email: string;
+  role?: UserRole;
 }
 
 interface LoginAuthProps {
-  onSuccess: (user: User) => void;
+  onSuccess: (user: User, role: UserRole) => void;
 }
 
 const LoginAuth = ({ onSuccess }: LoginAuthProps) => {
@@ -22,25 +24,17 @@ const LoginAuth = ({ onSuccess }: LoginAuthProps) => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [role, setRole] = useState<UserRole>('client');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async () => {
     if (!username || !password) {
-      toast({
-        title: 'Ошибка',
-        description: 'Заполните логин и пароль',
-        variant: 'destructive',
-      });
+      toast({ title: 'Ошибка', description: 'Заполните логин и пароль', variant: 'destructive' });
       return;
     }
-
     if (isRegister && password.length < 6) {
-      toast({
-        title: 'Ошибка',
-        description: 'Пароль должен быть не менее 6 символов',
-        variant: 'destructive',
-      });
+      toast({ title: 'Ошибка', description: 'Пароль должен быть не менее 6 символов', variant: 'destructive' });
       return;
     }
 
@@ -48,7 +42,6 @@ const LoginAuth = ({ onSuccess }: LoginAuthProps) => {
     const action = isRegister ? 'register' : 'login';
 
     try {
-      console.log('Отправка запроса авторизации:', action, username);
       const response = await fetch(
         `https://functions.poehali.dev/dc6e212b-76c3-4b8c-8484-ab127b176d7e?action=${action}`,
         {
@@ -62,30 +55,22 @@ const LoginAuth = ({ onSuccess }: LoginAuthProps) => {
         }
       );
 
-      console.log('Ответ сервера:', response.status, response.statusText);
       const data = await response.json();
-      console.log('Данные ответа:', data);
 
       if (data.success && data.user) {
+        const savedRole = isRegister ? role : ((localStorage.getItem('userRole') as UserRole) || 'client');
         localStorage.setItem('user', JSON.stringify(data.user));
-        onSuccess(data.user);
+        localStorage.setItem('userRole', savedRole);
+        onSuccess(data.user, savedRole);
         toast({
           title: isRegister ? 'Регистрация успешна!' : 'Добро пожаловать!',
           description: `Вы вошли как ${data.user.name}`,
         });
       } else {
-        toast({
-          title: 'Ошибка',
-          description: data.error || 'Не удалось войти',
-          variant: 'destructive',
-        });
+        toast({ title: 'Ошибка', description: data.error || 'Не удалось войти', variant: 'destructive' });
       }
-    } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: 'Произошла ошибка при авторизации',
-        variant: 'destructive',
-      });
+    } catch {
+      toast({ title: 'Ошибка', description: 'Произошла ошибка при авторизации', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -153,6 +138,39 @@ const LoginAuth = ({ onSuccess }: LoginAuthProps) => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Я регистрируюсь как</Label>
+            <div className="flex items-center gap-3 p-1 bg-slate-100 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setRole('client')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                  role === 'client'
+                    ? 'bg-white shadow text-slate-900'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Заказчик
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('freelancer')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                  role === 'freelancer'
+                    ? 'bg-white shadow text-slate-900'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Исполнитель
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              {role === 'client'
+                ? 'Размещайте заказы и нанимайте фрилансеров'
+                : 'Находите заказы и берите проекты в работу'}
+            </p>
           </div>
         </>
       )}

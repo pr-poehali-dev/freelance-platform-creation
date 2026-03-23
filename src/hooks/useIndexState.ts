@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { SortOrder } from '@/components/HeroSection';
 
+export type UserRole = 'client' | 'freelancer';
+
 export interface User {
   id: number;
   username: string;
   name: string;
   email: string;
   balance?: number;
+  role?: UserRole;
 }
 
 export interface Order {
@@ -66,6 +69,9 @@ export const useIndexState = () => {
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [appliedSearch, setAppliedSearch] = useState('');
   const [appliedCategory, setAppliedCategory] = useState('all');
+  const [userRole, setUserRole] = useState<UserRole>(() => {
+    return (localStorage.getItem('userRole') as UserRole) || 'client';
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -125,14 +131,20 @@ export const useIndexState = () => {
     }
   };
 
+  const handleRoleChange = (role: UserRole) => {
+    setUserRole(role);
+    localStorage.setItem('userRole', role);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     setUser(null);
   };
 
-  const handleAuthSuccess = (userData: User) => {
+  const handleAuthSuccess = (userData: User, role: UserRole) => {
     setUser(userData);
     setShowAuthDialog(false);
+    handleRoleChange(role);
     if (userData.id) {
       loadBalance(userData.id);
     }
@@ -301,6 +313,7 @@ export const useIndexState = () => {
     sortOrder, setSortOrder,
     appliedSearch, setAppliedSearch,
     appliedCategory, setAppliedCategory,
+    userRole, handleRoleChange,
     // handlers
     handleLogout,
     handleAuthSuccess,

@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import type { SortOrder } from '@/components/HeroSection';
+import type { UserRole } from '@/hooks/useIndexState';
 
 interface User {
   id: number;
@@ -68,6 +69,7 @@ interface ProjectsSectionProps {
   onViewResponses: (orderId: number, orderTitle: string) => void;
   onViewFreelancerProfile: (freelancerId: number) => void;
   onStartDirectChat: (userId: number, userName: string) => void;
+  userRole?: UserRole;
 }
 
 // Карта похожих категорий
@@ -96,7 +98,9 @@ const ProjectsSection = ({
   onViewResponses,
   onViewFreelancerProfile,
   onStartDirectChat,
+  userRole = 'client',
 }: ProjectsSectionProps) => {
+  const isFreelancer = userRole === 'freelancer';
   const q = searchQuery.toLowerCase().trim();
 
   const matchesSearch = (order: Order) => {
@@ -145,10 +149,16 @@ const ProjectsSection = ({
     <section id="projects" className="py-12">
       <div className="container mx-auto px-4">
         <Tabs defaultValue="projects" className="w-full">
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 mb-8">
+          <TabsList className={`grid w-full max-w-2xl mx-auto mb-8 ${isFreelancer ? 'grid-cols-2' : 'grid-cols-3'}`}>
             <TabsTrigger value="projects">Активные заказы</TabsTrigger>
-            <TabsTrigger value="top">Топ фрилансеров</TabsTrigger>
-            <TabsTrigger value="freelancers">Все фрилансеры</TabsTrigger>
+            {isFreelancer ? (
+              <TabsTrigger value="all-orders">Все заказы</TabsTrigger>
+            ) : (
+              <>
+                <TabsTrigger value="top">Топ фрилансеров</TabsTrigger>
+                <TabsTrigger value="freelancers">Все фрилансеры</TabsTrigger>
+              </>
+            )}
           </TabsList>
 
           <TabsContent value="projects" className="space-y-4">
@@ -275,6 +285,75 @@ const ProjectsSection = ({
                 <div className="col-span-2 text-center py-12 text-muted-foreground">
                   <Icon name="SearchX" size={48} className="mx-auto mb-3 opacity-40" />
                   <p className="text-lg">Заказов не найдено</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="all-orders" className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-6">
+              {orders.sort((a, b) => (b.id ?? 0) - (a.id ?? 0)).map((order) => (
+                <Card
+                  key={order.id}
+                  className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 gradient-card"
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between mb-2">
+                      <Badge className="gradient-primary text-white border-0">{order.category}</Badge>
+                      {order.budget_min && order.budget_max && (
+                        <span className="text-2xl font-bold text-gradient">
+                          {order.budget_min.toLocaleString()} - {order.budget_max.toLocaleString()} ₽
+                        </span>
+                      )}
+                    </div>
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                      {order.title}
+                    </CardTitle>
+                    <CardDescription className="text-base">{order.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-4 text-muted-foreground">
+                        {order.deadline && (
+                          <span className="flex items-center gap-1">
+                            <Icon name="Clock" size={16} />
+                            до {new Date(order.deadline).toLocaleDateString('ru-RU')}
+                          </span>
+                        )}
+                        <button
+                          className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                          onClick={() => onViewUserProfile(order.user_id)}
+                        >
+                          <Icon name="User" size={16} />
+                          {order.user_name}
+                        </button>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => user ? onStartChat(order.user_id, order.id) : null}
+                          disabled={!user}
+                        >
+                          <Icon name="MessageCircle" size={16} className="mr-1" />
+                          Написать
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="gradient-primary text-white border-0"
+                          onClick={() => user ? onRespondToOrder(order.id, order.title) : null}
+                          disabled={!user}
+                        >
+                          Откликнуться
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {orders.length === 0 && (
+                <div className="col-span-2 text-center py-12 text-muted-foreground">
+                  <p className="text-lg">Заказов пока нет</p>
                 </div>
               )}
             </div>

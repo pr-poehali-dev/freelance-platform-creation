@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import LoginAuth from '@/components/LoginAuth';
+import type { UserRole } from '@/hooks/useIndexState';
 import CreateOrderDialog from '@/components/CreateOrderDialog';
 import ProfileDialog from '@/components/ProfileDialog';
 
@@ -35,7 +36,7 @@ interface DialogsProps {
   onCloseFreelancer: () => void;
   showAuthDialog: boolean;
   onCloseAuth: (open: boolean) => void;
-  onAuthSuccess: (userData: User) => void;
+  onAuthSuccess: (userData: User, role: UserRole) => void;
   showCreateOrderDialog: boolean;
   onCloseCreateOrder: (open: boolean) => void;
   user: User | null;
