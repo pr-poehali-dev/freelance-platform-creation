@@ -26,6 +26,7 @@ export interface Order {
   status?: 'active' | 'in_progress' | 'completed';
   executor_id?: number;
   executor_name?: string;
+  response_status?: 'pending' | 'accepted' | 'rejected';
 }
 
 export interface TopFreelancer {

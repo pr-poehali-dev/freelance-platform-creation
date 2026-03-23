@@ -54,7 +54,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                    u.name as user_name, 
                    u.username,
                    executor.name as executor_name,
-                   executor.username as executor_username
+                   executor.username as executor_username,
+                   r.status as response_status
             FROM t_p96553691_freelance_platform_c.orders o 
             JOIN t_p96553691_freelance_platform_c.users u ON o.user_id = u.id 
             LEFT JOIN t_p96553691_freelance_platform_c.users executor ON o.executor_id = executor.id

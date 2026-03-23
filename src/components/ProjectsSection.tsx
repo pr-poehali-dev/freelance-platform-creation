@@ -190,7 +190,9 @@ const ProjectsSection = ({
                         <Badge className="gradient-primary text-white border-0">
                           {order.category}
                         </Badge>
-                        {order.status === 'in_progress' && (
+                        {isFreelancer && order.response_status === 'rejected' ? (
+                          <Badge className="bg-red-500 text-white">Отклонен</Badge>
+                        ) : order.status === 'in_progress' && (
                           <Badge className="bg-blue-500 text-white">В работе</Badge>
                         )}
                       </div>
