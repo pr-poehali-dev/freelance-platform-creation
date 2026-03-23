@@ -1,6 +1,7 @@
 import json
 import os
 import base64
+import uuid
 import boto3
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -10,6 +11,14 @@ SCHEMA = 't_p96553691_freelance_platform_c'
 def get_cdn_url(key):
     access_key = os.environ['AWS_ACCESS_KEY_ID']
     return f"https://cdn.poehali.dev/projects/{access_key}/bucket/{key}"
+
+def get_s3():
+    return boto3.client(
+        's3',
+        endpoint_url='https://bucket.poehali.dev',
+        aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+    )
 
 def handler(event: dict, context) -> dict:
     """Прямые чаты между пользователями с поддержкой файловых вложений."""
@@ -69,6 +78,26 @@ def handler(event: dict, context) -> dict:
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'body': json.dumps({'chats': chats})
+            }
+
+        if action == 'presign':
+            file_name = query_params.get('file_name', 'file')
+            file_type = query_params.get('file_type', 'application/octet-stream')
+            ext = file_name.rsplit('.', 1)[-1] if '.' in file_name else 'bin'
+            key = f'chat-files/{uuid.uuid4()}.{ext}'
+            s3 = get_s3()
+            upload_url = s3.generate_presigned_url(
+                'put_object',
+                Params={'Bucket': 'files', 'Key': key, 'ContentType': file_type},
+                ExpiresIn=3600,
+            )
+            cdn_url = get_cdn_url(key)
+            cur.close()
+            conn.close()
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'upload_url': upload_url, 'cdn_url': cdn_url, 'key': key})
             }
 
         if action == 'messages':
@@ -143,9 +172,11 @@ def handler(event: dict, context) -> dict:
         if action == 'send':
             chat_id = int(body.get('chat_id', 0))
             message = (body.get('message') or '').strip()
-            file_data = body.get('file_data')
+            file_url = body.get('file_url')
             file_name = body.get('file_name', '')
             file_type = body.get('file_type', '')
+            # legacy base64 fallback
+            file_data = body.get('file_data')
 
             if not chat_id:
                 cur.close()
@@ -156,7 +187,7 @@ def handler(event: dict, context) -> dict:
                     'body': json.dumps({'error': 'chat_id обязателен'})
                 }
 
-            if not message and not file_data:
+            if not message and not file_url and not file_data:
                 cur.close()
                 conn.close()
                 return {
@@ -165,18 +196,11 @@ def handler(event: dict, context) -> dict:
                     'body': json.dumps({'error': 'Нужно сообщение или файл'})
                 }
 
-            file_url = None
-            if file_data:
-                s3 = boto3.client(
-                    's3',
-                    endpoint_url='https://bucket.poehali.dev',
-                    aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-                    aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY']
-                )
-                import uuid
+            if not file_url and file_data:
                 ext = file_name.split('.')[-1] if '.' in file_name else 'bin'
                 key = f"chat-files/{chat_id}/{uuid.uuid4()}.{ext}"
                 file_bytes = base64.b64decode(file_data)
+                s3 = get_s3()
                 s3.put_object(Bucket='files', Key=key, Body=file_bytes, ContentType=file_type or 'application/octet-stream')
                 file_url = get_cdn_url(key)
 

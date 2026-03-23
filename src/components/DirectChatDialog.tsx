@@ -101,8 +101,8 @@ const DirectChatDialog = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      toast({ title: 'Файл слишком большой', description: 'Максимальный размер — 10 МБ', variant: 'destructive' });
+    if (file.size > 1024 * 1024 * 1024) {
+      toast({ title: 'Файл слишком большой', description: 'Максимальный размер — 1 ГБ', variant: 'destructive' });
       return;
     }
     setSelectedFile(file);
@@ -114,15 +114,27 @@ const DirectChatDialog = ({
 
     setSending(true);
     try {
-      let fileData: string | null = null;
+      let fileUrl: string | null = null;
       let fileName: string | null = null;
       let fileType: string | null = null;
 
       if (selectedFile) {
-        const buffer = await selectedFile.arrayBuffer();
-        fileData = btoa(String.fromCharCode(...new Uint8Array(buffer)));
         fileName = selectedFile.name;
-        fileType = selectedFile.type;
+        fileType = selectedFile.type || 'application/octet-stream';
+
+        const presignRes = await fetch(
+          `${DIRECT_CHAT_URL}?action=presign&file_name=${encodeURIComponent(fileName)}&file_type=${encodeURIComponent(fileType)}`,
+          { headers: { 'X-User-Id': currentUserId.toString() } }
+        );
+        const presignData = await presignRes.json();
+
+        await fetch(presignData.upload_url, {
+          method: 'PUT',
+          headers: { 'Content-Type': fileType },
+          body: selectedFile,
+        });
+
+        fileUrl = presignData.cdn_url;
       }
 
       const res = await fetch(DIRECT_CHAT_URL, {
@@ -132,7 +144,7 @@ const DirectChatDialog = ({
           action: 'send',
           chat_id: chatId,
           message: newMessage.trim(),
-          file_data: fileData,
+          file_url: fileUrl,
           file_name: fileName,
           file_type: fileType,
         }),

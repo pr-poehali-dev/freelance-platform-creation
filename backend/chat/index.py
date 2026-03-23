@@ -113,6 +113,20 @@ def handler(event: dict, context) -> dict:
                     msg['edited_at'] = msg['edited_at'].isoformat() if msg.get('edited_at') else None
                 return resp(200, {'messages': messages})
 
+            elif action == 'presign':
+                file_name = query_params.get('file_name', 'file')
+                file_type = query_params.get('file_type', 'application/octet-stream')
+                ext = file_name.rsplit('.', 1)[-1] if '.' in file_name else 'bin'
+                key = f'chat-files/{uuid.uuid4()}.{ext}'
+                s3 = get_s3()
+                upload_url = s3.generate_presigned_url(
+                    'put_object',
+                    Params={'Bucket': 'files', 'Key': key, 'ContentType': file_type},
+                    ExpiresIn=3600,
+                )
+                cdn_url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{key}"
+                return resp(200, {'upload_url': upload_url, 'cdn_url': cdn_url, 'key': key})
+
         elif method == 'POST':
             body = json.loads(event.get('body', '{}'))
             action = body.get('action', 'send')
@@ -161,15 +175,16 @@ def handler(event: dict, context) -> dict:
             elif action == 'send':
                 chat_id = body.get('chat_id')
                 message = body.get('message', '').strip()
-                file_data = body.get('file_data')
+                file_url = body.get('file_url')
                 file_name = body.get('file_name')
                 file_type = body.get('file_type')
+                # legacy base64 fallback
+                file_data = body.get('file_data')
 
-                if not chat_id or (not message and not file_data):
+                if not chat_id or (not message and not file_url and not file_data):
                     return resp(400, {'error': 'chat_id и message или файл обязательны'})
 
-                file_url = None
-                if file_data and file_name and file_type:
+                if not file_url and file_data and file_name and file_type:
                     file_url = upload_file(file_data, file_name, file_type)
 
                 cur.execute("""
