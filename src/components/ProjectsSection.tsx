@@ -57,14 +57,14 @@ interface ProjectsSectionProps {
   orders: Order[];
   myOrders?: Order[];
   respondedOrders?: Order[];
-  freelancers: Freelancer[];
+  freelancers: TopFreelancer[];
   topFreelancers: TopFreelancer[];
   user: User | null;
   searchQuery?: string;
   selectedCategory?: string;
   sortOrder?: SortOrder;
   onDeleteOrder: (orderId: number) => void;
-  onFreelancerClick: (freelancer: Freelancer) => void;
+  onFreelancerClick: (freelancer: TopFreelancer) => void;
   onCreateOrder: () => void;
   onViewUserProfile: (userId: number) => void;
   onStartChat: (userId: number, orderId: number) => void;
@@ -495,50 +495,56 @@ const ProjectsSection = ({
                 <Card
                   key={freelancer.id}
                   className="group hover:shadow-xl transition-all duration-300 cursor-pointer gradient-card border-2 hover:border-primary/20"
-                  onClick={() => onFreelancerClick(freelancer)}
+                  onClick={() => onViewFreelancerProfile(freelancer.id)}
                 >
                   <CardHeader>
                     <div className="flex items-center gap-4 mb-3">
                       <Avatar className="w-16 h-16 border-4 border-primary/20">
-                        <AvatarImage src={freelancer.avatar} />
+                        <AvatarImage src={freelancer.avatar_url} />
                         <AvatarFallback className="gradient-primary text-white text-xl font-bold">
                           {freelancer.name.split(' ').map((n: string) => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <CardTitle className="text-lg mb-1">{freelancer.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{freelancer.role}</p>
+                        <p className="text-sm text-muted-foreground">@{freelancer.username}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 text-sm mb-3">
                       <div className="flex items-center gap-1">
                         <Icon name="Star" size={16} className="fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold">{freelancer.rating}</span>
-                        <span className="text-muted-foreground">({freelancer.reviews})</span>
+                        <span className="font-semibold">{Number(freelancer.rating).toFixed(1)}</span>
+                        <span className="text-muted-foreground">({freelancer.total_reviews})</span>
                       </div>
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <Icon name="Briefcase" size={16} />
-                        <span>{freelancer.completedProjects} проектов</span>
+                        <span>{freelancer.completed_projects} проектов</span>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {freelancer.skills.slice(0, 3).map((skill: string) => (
-                        <Badge key={skill} variant="secondary" className="text-xs">
-                          {skill}
-                        </Badge>
-                      ))}
-                      {freelancer.skills.length > 3 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{freelancer.skills.length - 3}
-                        </Badge>
-                      )}
-                    </div>
+                    {freelancer.skills && freelancer.skills.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {freelancer.skills.slice(0, 3).map((skill: string) => (
+                          <Badge key={skill} variant="secondary" className="text-xs">
+                            {skill}
+                          </Badge>
+                        ))}
+                        {freelancer.skills.length > 3 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{freelancer.skills.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-gradient">{freelancer.hourlyRate}</span>
-                      <Button size="sm" className="gradient-primary text-white border-0">
-                        Нанять
+                      <span className="text-lg font-bold text-gradient">
+                        {freelancer.hourly_rate ? `от ${freelancer.hourly_rate.toLocaleString()} ₽/ч` : ''}
+                      </span>
+                      <Button size="sm" className="gradient-primary text-white border-0"
+                        onClick={(e) => { e.stopPropagation(); onStartDirectChat(freelancer.user_id, freelancer.name); }}
+                      >
+                        Написать
                       </Button>
                     </div>
                   </CardContent>
@@ -547,7 +553,7 @@ const ProjectsSection = ({
               {freelancers.length === 0 && (
                 <div className="col-span-3 text-center py-12 text-muted-foreground">
                   <Icon name="Users" size={48} className="mx-auto mb-3 opacity-30" />
-                  <p className="text-lg">Пока нет фрилансеров</p>
+                  <p className="text-lg">Пока нет фрилансеров с отзывами</p>
                 </div>
               )}
             </div>

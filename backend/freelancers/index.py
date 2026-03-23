@@ -39,7 +39,7 @@ def handler(event: dict, context) -> dict:
             limit = 100
         
         cur.execute(f"""
-            SELECT 
+            SELECT
                 f.id,
                 f.user_id,
                 u.name,
@@ -51,11 +51,19 @@ def handler(event: dict, context) -> dict:
                 f.rating,
                 f.total_reviews,
                 f.completed_projects,
-                f.created_at
+                f.created_at,
+                COALESCE(r.review_count, 0) as review_count,
+                COALESCE(r.avg_rating, 0) as real_avg_rating
             FROM t_p96553691_freelance_platform_c.freelancers f
             JOIN t_p96553691_freelance_platform_c.users u ON f.user_id = u.id
-            WHERE f.rating > 0
-            ORDER BY f.rating DESC, f.completed_projects DESC
+            INNER JOIN (
+                SELECT reviewee_id, COUNT(*) as review_count, ROUND(AVG(rating)::numeric, 2) as avg_rating
+                FROM t_p96553691_freelance_platform_c.order_reviews
+                WHERE role = 'client'
+                GROUP BY reviewee_id
+                HAVING COUNT(*) >= 1
+            ) r ON r.reviewee_id = f.user_id
+            ORDER BY r.avg_rating DESC, f.completed_projects DESC
             LIMIT {limit}
         """)
         

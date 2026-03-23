@@ -69,14 +69,14 @@ const Index = () => {
         orders={s.orders}
         myOrders={s.myOrders}
         respondedOrders={s.respondedOrders}
-        freelancers={freelancers}
+        freelancers={s.allFreelancers}
         topFreelancers={s.topFreelancers}
         user={s.user}
         searchQuery={s.appliedSearch}
         selectedCategory={s.appliedCategory}
         sortOrder={s.sortOrder}
         onDeleteOrder={s.handleDeleteOrder}
-        onFreelancerClick={setSelectedFreelancer}
+        onFreelancerClick={() => {}}
         onCreateOrder={s.handleCreateOrder}
         onViewUserProfile={s.handleViewUserProfile}
         onStartChat={s.handleStartChat}

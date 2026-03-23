@@ -74,6 +74,7 @@ export const useIndexState = () => {
   const [myOrders, setMyOrders] = useState<Order[]>([]);
   const [respondedOrders, setRespondedOrders] = useState<Order[]>([]);
   const [topFreelancers, setTopFreelancers] = useState<TopFreelancer[]>([]);
+  const [allFreelancers, setAllFreelancers] = useState<TopFreelancer[]>([]);
   const [showFreelancerProfileDialog, setShowFreelancerProfileDialog] = useState(false);
   const [selectedFreelancerId, setSelectedFreelancerId] = useState<number | null>(null);
   const [showWalletDialog, setShowWalletDialog] = useState(false);
@@ -104,6 +105,7 @@ export const useIndexState = () => {
   useEffect(() => {
     loadOrders();
     loadTopFreelancers();
+    loadAllFreelancers();
   }, []);
 
   const checkPendingReview = async (userId: number) => {
@@ -191,6 +193,16 @@ export const useIndexState = () => {
       setTopFreelancers(data.freelancers || []);
     } catch (error) {
       console.error('Ошибка загрузки фрилансеров:', error);
+    }
+  };
+
+  const loadAllFreelancers = async () => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/0db794de-963c-4ac1-9537-4f9a94d9ec66?action=list&limit=100');
+      const data = await response.json();
+      setAllFreelancers(data.freelancers || []);
+    } catch (error) {
+      console.error('Ошибка загрузки всех фрилансеров:', error);
     }
   };
 
@@ -417,6 +429,7 @@ export const useIndexState = () => {
     myOrders,
     respondedOrders,
     topFreelancers,
+    allFreelancers,
     showFreelancerProfileDialog, setShowFreelancerProfileDialog,
     selectedFreelancerId,
     showWalletDialog, setShowWalletDialog,
