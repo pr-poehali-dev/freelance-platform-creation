@@ -77,6 +77,7 @@ const Index = () => {
         onStartChat={s.handleStartChat}
         onRespondToOrder={s.handleRespondToOrder}
         onViewResponses={s.handleViewResponses}
+        onCompleteOrder={s.handleCompleteOrder}
         onViewFreelancerProfile={s.handleViewFreelancerProfile}
         onStartDirectChat={s.handleStartDirectChat}
         userRole={s.userRole}

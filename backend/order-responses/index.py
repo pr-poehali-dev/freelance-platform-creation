@@ -172,6 +172,75 @@ def handler(event: dict, context) -> dict:
             response_id = body.get('response_id')
             action = body.get('action')
 
+            if action == 'complete_order':
+                order_id = body.get('order_id')
+                if not order_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'order_id обязателен'}),
+                        'isBase64Encoded': False
+                    }
+
+                cur.execute("""
+                    SELECT o.*, u.name as client_name, ex.name as executor_name
+                    FROM t_p96553691_freelance_platform_c.orders o
+                    JOIN t_p96553691_freelance_platform_c.users u ON o.user_id = u.id
+                    LEFT JOIN t_p96553691_freelance_platform_c.users ex ON o.executor_id = ex.id
+                    WHERE o.id = %s AND o.status = 'in_progress'
+                """, (order_id,))
+                order = cur.fetchone()
+
+                if not order:
+                    return {
+                        'statusCode': 404,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Заказ не найден или не в работе'}),
+                        'isBase64Encoded': False
+                    }
+
+                if order['user_id'] != user_id:
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Только владелец заказа может подтвердить выполнение'}),
+                        'isBase64Encoded': False
+                    }
+
+                cur.execute("""
+                    INSERT INTO t_p96553691_freelance_platform_c.completed_orders
+                        (order_id, title, description, category, budget_min, budget_max,
+                         client_id, client_name, executor_id, executor_name)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    order['id'], order['title'], order['description'], order['category'],
+                    order['budget_min'], order['budget_max'],
+                    order['user_id'], order['client_name'],
+                    order['executor_id'], order['executor_name']
+                ))
+
+                if order['executor_id']:
+                    cur.execute("""
+                        UPDATE t_p96553691_freelance_platform_c.freelancers
+                        SET completed_projects = completed_projects + 1
+                        WHERE user_id = %s
+                    """, (order['executor_id'],))
+
+                cur.execute("""
+                    DELETE FROM t_p96553691_freelance_platform_c.order_responses WHERE order_id = %s
+                """, (order['id'],))
+                cur.execute("""
+                    DELETE FROM t_p96553691_freelance_platform_c.orders WHERE id = %s
+                """, (order['id'],))
+
+                conn.commit()
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True, 'message': 'Заказ подтверждён и сохранён в историю'}),
+                    'isBase64Encoded': False
+                }
+
             if not response_id or not action:
                 return {
                     'statusCode': 400,

@@ -203,6 +203,28 @@ export const useIndexState = () => {
     if (user?.id) loadMyOrders(user.id);
   };
 
+  const handleCompleteOrder = async (orderId: number) => {
+    if (!user) return;
+    if (!confirm('Подтвердить выполнение заказа? Заказ будет сохранён в историю и удалён из активных.')) return;
+    try {
+      const response = await fetch('https://functions.poehali.dev/398a8b33-64ba-4a3b-be92-18cc1971a490', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-User-Id': user.id.toString() },
+        body: JSON.stringify({ action: 'complete_order', order_id: orderId }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        toast({ title: 'Заказ выполнен!', description: 'Заказ сохранён в историю выполненных' });
+        loadOrders();
+        if (user?.id) loadMyOrders(user.id);
+      } else {
+        toast({ title: 'Ошибка', description: data.error || 'Не удалось завершить заказ', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Ошибка', description: 'Произошла ошибка', variant: 'destructive' });
+    }
+  };
+
   const handleDeleteOrder = async (orderId: number) => {
     if (!user) return;
     if (!confirm('Вы уверены, что хотите удалить этот заказ?')) return;
@@ -365,6 +387,7 @@ export const useIndexState = () => {
     handleCreateOrder,
     handleOrderCreated,
     handleDeleteOrder,
+    handleCompleteOrder,
     handleViewUserProfile,
     handleStartChat,
     handleOpenChatFromList,

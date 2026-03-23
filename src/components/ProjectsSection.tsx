@@ -70,6 +70,7 @@ interface ProjectsSectionProps {
   onStartChat: (userId: number, orderId: number) => void;
   onRespondToOrder: (orderId: number, orderTitle: string) => void;
   onViewResponses: (orderId: number, orderTitle: string) => void;
+  onCompleteOrder: (orderId: number) => void;
   onViewFreelancerProfile: (freelancerId: number) => void;
   onStartDirectChat: (userId: number, userName: string) => void;
   userRole?: UserRole;
@@ -101,6 +102,7 @@ const ProjectsSection = ({
   onStartChat,
   onRespondToOrder,
   onViewResponses,
+  onCompleteOrder,
   onViewFreelancerProfile,
   onStartDirectChat,
   userRole = 'client',
@@ -227,14 +229,25 @@ const ProjectsSection = ({
                       <div className="flex gap-2">
                         {user && user.id === order.user_id ? (
                           <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => onViewResponses(order.id, order.title)}
-                            >
-                              <Icon name="Users" size={16} className="mr-1" />
-                              Отклики
-                            </Button>
+                            {order.status === 'in_progress' ? (
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700 text-white border-0"
+                                onClick={() => onCompleteOrder(order.id)}
+                              >
+                                <Icon name="CheckCircle" size={16} className="mr-1" />
+                                Подтвердить выполнение
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => onViewResponses(order.id, order.title)}
+                              >
+                                <Icon name="Users" size={16} className="mr-1" />
+                                Отклики
+                              </Button>
+                            )}
                             <Button
                               size="sm"
                               variant="destructive"
