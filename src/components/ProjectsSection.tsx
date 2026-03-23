@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import type { SortOrder } from '@/components/HeroSection';
@@ -101,6 +102,7 @@ const ProjectsSection = ({
   userRole = 'client',
 }: ProjectsSectionProps) => {
   const isFreelancer = userRole === 'freelancer';
+  const [activeTab, setActiveTab] = useState('projects');
   const q = searchQuery.toLowerCase().trim();
 
   const matchesSearch = (order: Order) => {
@@ -148,7 +150,7 @@ const ProjectsSection = ({
   return (
     <section id="projects" className="py-12">
       <div className="container mx-auto px-4">
-        <Tabs defaultValue="projects" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full max-w-2xl mx-auto mb-8 ${isFreelancer ? 'grid-cols-2' : 'grid-cols-3'}`}>
             <TabsTrigger value="projects">Активные заказы</TabsTrigger>
             {isFreelancer ? (
@@ -277,7 +279,7 @@ const ProjectsSection = ({
                 <div className="col-span-2 text-center py-12 text-muted-foreground">
                   <p className="text-lg mb-4">Пока нет активных заказов</p>
                   {isFreelancer ? (
-                    <Button onClick={onCreateOrder} className="gradient-primary text-white border-0">
+                    <Button onClick={() => setActiveTab('all-orders')} className="gradient-primary text-white border-0">
                       Подписаться на первый заказ
                     </Button>
                   ) : (
