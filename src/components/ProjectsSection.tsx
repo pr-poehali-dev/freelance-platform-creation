@@ -276,9 +276,15 @@ const ProjectsSection = ({
               {displayOrders.length === 0 && !noExactResults && (
                 <div className="col-span-2 text-center py-12 text-muted-foreground">
                   <p className="text-lg mb-4">Пока нет активных заказов</p>
-                  <Button onClick={onCreateOrder} className="gradient-primary text-white border-0">
-                    Разместить первый заказ
-                  </Button>
+                  {isFreelancer ? (
+                    <Button onClick={onCreateOrder} className="gradient-primary text-white border-0">
+                      Подписаться на первый заказ
+                    </Button>
+                  ) : (
+                    <Button onClick={onCreateOrder} className="gradient-primary text-white border-0">
+                      Разместить первый заказ
+                    </Button>
+                  )}
                 </div>
               )}
               {noExactResults && similarOrders.length === 0 && (
@@ -504,6 +510,12 @@ const ProjectsSection = ({
                   </CardContent>
                 </Card>
               ))}
+              {freelancers.length === 0 && (
+                <div className="col-span-3 text-center py-12 text-muted-foreground">
+                  <Icon name="Users" size={48} className="mx-auto mb-3 opacity-30" />
+                  <p className="text-lg">Пока нет фрилансеров</p>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
