@@ -70,7 +70,6 @@ interface ProjectsSectionProps {
   onStartChat: (userId: number, orderId: number) => void;
   onRespondToOrder: (orderId: number, orderTitle: string) => void;
   onViewResponses: (orderId: number, orderTitle: string) => void;
-  onViewActiveFreelancers: (orderId: number, orderTitle: string) => void;
   onViewFreelancerProfile: (freelancerId: number) => void;
   onStartDirectChat: (userId: number, userName: string) => void;
   userRole?: UserRole;
@@ -102,7 +101,6 @@ const ProjectsSection = ({
   onStartChat,
   onRespondToOrder,
   onViewResponses,
-  onViewActiveFreelancers,
   onViewFreelancerProfile,
   onStartDirectChat,
   userRole = 'client',
@@ -227,25 +225,14 @@ const ProjectsSection = ({
                       <div className="flex gap-2">
                         {user && user.id === order.user_id ? (
                           <>
-                            {order.status === 'in_progress' ? (
-                              <Button
-                                size="sm"
-                                className="bg-blue-500 hover:bg-blue-600 text-white border-0"
-                                onClick={() => onViewActiveFreelancers(order.id, order.title)}
-                              >
-                                <Icon name="Briefcase" size={16} className="mr-1" />
-                                Фрилансеры в работе
-                              </Button>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => onViewResponses(order.id, order.title)}
-                              >
-                                <Icon name="Users" size={16} className="mr-1" />
-                                Отклики
-                              </Button>
-                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => onViewResponses(order.id, order.title)}
+                            >
+                              <Icon name="Users" size={16} className="mr-1" />
+                              Отклики
+                            </Button>
                             <Button
                               size="sm"
                               variant="destructive"

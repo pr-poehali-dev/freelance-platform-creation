@@ -263,58 +263,6 @@ def handler(event: dict, context) -> dict:
                     'isBase64Encoded': False
                 }
 
-            elif action == 'complete':
-                cur.execute("""
-                    SELECT r.freelancer_id, r.order_id, o.user_id as order_owner_id
-                    FROM t_p96553691_freelance_platform_c.order_responses r
-                    JOIN t_p96553691_freelance_platform_c.orders o ON r.order_id = o.id
-                    WHERE r.id = %s AND r.status = 'accepted'
-                """, (response_id,))
-                accepted = cur.fetchone()
-
-                if not accepted:
-                    return {
-                        'statusCode': 404,
-                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Принятый отклик не найден'}),
-                        'isBase64Encoded': False
-                    }
-
-                if accepted['order_owner_id'] != user_id:
-                    return {
-                        'statusCode': 403,
-                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Только владелец заказа может завершить его'}),
-                        'isBase64Encoded': False
-                    }
-
-                cur.execute("""
-                    UPDATE t_p96553691_freelance_platform_c.orders
-                    SET status = 'completed', updated_at = CURRENT_TIMESTAMP
-                    WHERE id = %s
-                """, (accepted['order_id'],))
-
-                cur.execute("""
-                    UPDATE t_p96553691_freelance_platform_c.order_responses
-                    SET status = 'completed'
-                    WHERE id = %s
-                """, (response_id,))
-
-                cur.execute("""
-                    UPDATE t_p96553691_freelance_platform_c.freelancers
-                    SET completed_projects = completed_projects + 1
-                    WHERE user_id = %s
-                """, (accepted['freelancer_id'],))
-
-                conn.commit()
-
-                return {
-                    'statusCode': 200,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'success': True, 'message': 'Заказ завершён'}),
-                    'isBase64Encoded': False
-                }
-
         return {
             'statusCode': 400,
             'headers': {

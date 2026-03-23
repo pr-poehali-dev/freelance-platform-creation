@@ -5,7 +5,6 @@ import ProjectsSection from '@/components/ProjectsSection';
 import Dialogs from '@/components/Dialogs';
 import IndexChatDialogs from '@/components/IndexChatDialogs';
 import IndexOrderDialogs from '@/components/IndexOrderDialogs';
-import ActiveFreelancersDialog from '@/components/ActiveFreelancersDialog';
 import { useIndexState } from '@/hooks/useIndexState';
 import { categories, projects, freelancers } from '@/data/indexStaticData';
 
@@ -78,7 +77,6 @@ const Index = () => {
         onStartChat={s.handleStartChat}
         onRespondToOrder={s.handleRespondToOrder}
         onViewResponses={s.handleViewResponses}
-        onViewActiveFreelancers={s.handleViewActiveFreelancers}
         onViewFreelancerProfile={s.handleViewFreelancerProfile}
         onStartDirectChat={s.handleStartDirectChat}
         userRole={s.userRole}
@@ -114,17 +112,6 @@ const Index = () => {
         directChatUser={s.directChatUser}
         onOpenChatFromList={s.handleOpenChatFromList}
       />
-
-      {s.user && (
-        <ActiveFreelancersDialog
-          open={s.showActiveFreelancersDialog}
-          onOpenChange={s.setShowActiveFreelancersDialog}
-          orderId={s.selectedOrderId}
-          orderTitle={s.selectedOrderTitle}
-          userId={s.user.id}
-          onOrderCompleted={s.handleResponseSuccess}
-        />
-      )}
 
       <IndexOrderDialogs
         user={s.user}
