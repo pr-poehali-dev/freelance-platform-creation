@@ -23,6 +23,9 @@ export interface Order {
   deadline?: string;
   user_id: number;
   user_name: string;
+  status?: 'active' | 'in_progress' | 'completed';
+  executor_id?: number;
+  executor_name?: string;
 }
 
 export interface TopFreelancer {
@@ -60,6 +63,7 @@ export const useIndexState = () => {
   const [selectedUserData, setSelectedUserData] = useState<User | null>(null);
   const [selectedUserOrders, setSelectedUserOrders] = useState<Order[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [myOrders, setMyOrders] = useState<Order[]>([]);
   const [respondedOrders, setRespondedOrders] = useState<Order[]>([]);
   const [topFreelancers, setTopFreelancers] = useState<TopFreelancer[]>([]);
   const [showFreelancerProfileDialog, setShowFreelancerProfileDialog] = useState(false);
@@ -83,6 +87,7 @@ export const useIndexState = () => {
       if (userData.id) {
         loadBalance(userData.id);
         loadRespondedOrders(userData.id);
+        loadMyOrders(userData.id);
       }
     }
   }, []);
@@ -123,6 +128,16 @@ export const useIndexState = () => {
     }
   };
 
+  const loadMyOrders = async (userId: number) => {
+    try {
+      const response = await fetch(`https://functions.poehali.dev/2862d449-505a-4b67-970b-db34c9334ed0?user_id=${userId}&status=`);
+      const data = await response.json();
+      setMyOrders(data.orders || []);
+    } catch (error) {
+      console.error('Ошибка загрузки своих заказов:', error);
+    }
+  };
+
   const loadRespondedOrders = async (userId: number) => {
     try {
       const response = await fetch(`https://functions.poehali.dev/2862d449-505a-4b67-970b-db34c9334ed0?freelancer_id=${userId}`);
@@ -160,6 +175,7 @@ export const useIndexState = () => {
     if (userData.id) {
       loadBalance(userData.id);
       loadRespondedOrders(userData.id);
+      loadMyOrders(userData.id);
     }
   };
 
@@ -183,6 +199,7 @@ export const useIndexState = () => {
 
   const handleOrderCreated = () => {
     loadOrders();
+    if (user?.id) loadMyOrders(user.id);
   };
 
   const handleDeleteOrder = async (orderId: number) => {
@@ -200,6 +217,7 @@ export const useIndexState = () => {
       if (data.success) {
         toast({ title: 'Заказ удален', description: 'Ваш заказ успешно удален' });
         loadOrders();
+        if (user?.id) loadMyOrders(user.id);
       } else {
         toast({ title: 'Ошибка', description: data.error || 'Не удалось удалить заказ', variant: 'destructive' });
       }
@@ -267,7 +285,10 @@ export const useIndexState = () => {
 
   const handleResponseSuccess = () => {
     loadOrders();
-    if (user?.id) loadRespondedOrders(user.id);
+    if (user?.id) {
+      loadRespondedOrders(user.id);
+      loadMyOrders(user.id);
+    }
   };
 
   const handleViewFreelancerProfile = (freelancerId: number) => {
@@ -318,6 +339,7 @@ export const useIndexState = () => {
     selectedUserData,
     selectedUserOrders,
     orders,
+    myOrders,
     respondedOrders,
     topFreelancers,
     showFreelancerProfileDialog, setShowFreelancerProfileDialog,

@@ -55,6 +55,7 @@ interface TopFreelancer {
 
 interface ProjectsSectionProps {
   orders: Order[];
+  myOrders?: Order[];
   respondedOrders?: Order[];
   freelancers: Freelancer[];
   topFreelancers: TopFreelancer[];
@@ -85,6 +86,7 @@ const CATEGORY_SIBLINGS: Record<string, string[]> = {
 
 const ProjectsSection = ({
   orders,
+  myOrders = [],
   respondedOrders = [],
   freelancers,
   topFreelancers,
@@ -132,7 +134,7 @@ const ProjectsSection = ({
     return 0;
   };
 
-  const sourceOrders = isFreelancer ? respondedOrders : orders;
+  const sourceOrders = isFreelancer ? respondedOrders : (user ? myOrders : orders);
 
   const exactMatches = sourceOrders.filter((o) => matchesSearch(o) && matchesCategory(o)).sort(sortFn);
 
@@ -306,7 +308,7 @@ const ProjectsSection = ({
 
           <TabsContent value="all-orders" className="space-y-4">
             <div className="grid md:grid-cols-2 gap-6">
-              {orders.sort((a, b) => (b.id ?? 0) - (a.id ?? 0)).map((order) => {
+              {orders.filter((o) => o.status !== 'in_progress' || respondedOrders.some((r) => r.id === o.id)).sort((a, b) => (b.id ?? 0) - (a.id ?? 0)).map((order) => {
                 const alreadyResponded = respondedOrders.some((r) => r.id === order.id);
                 return (
                 <Card

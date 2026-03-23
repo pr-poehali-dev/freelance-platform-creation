@@ -62,6 +62,7 @@ const Index = () => {
 
       <ProjectsSection
         orders={s.orders}
+        myOrders={s.myOrders}
         respondedOrders={s.respondedOrders}
         freelancers={freelancers}
         topFreelancers={s.topFreelancers}
