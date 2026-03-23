@@ -44,6 +44,42 @@ def handler(event: dict, context) -> dict:
 
     try:
         if method == 'GET':
+            action = query_params.get('action', 'list')
+
+            if action == 'pending':
+                cur.execute(f"""
+                    SELECT
+                        co.id as completed_order_id,
+                        co.title as order_title,
+                        co.client_id,
+                        co.client_name,
+                        co.executor_id,
+                        co.executor_name
+                    FROM {SCHEMA}.completed_orders co
+                    WHERE (co.client_id = %s OR co.executor_id = %s)
+                      AND NOT EXISTS (
+                          SELECT 1 FROM {SCHEMA}.order_reviews r
+                          WHERE r.completed_order_id = co.id AND r.reviewer_id = %s
+                      )
+                    ORDER BY co.completed_at DESC
+                    LIMIT 1
+                """, (user_id, user_id, user_id))
+                row = cur.fetchone()
+                if not row:
+                    return resp(200, {'pending': None})
+
+                row = dict(row)
+                is_client = row['client_id'] == user_id
+                return resp(200, {
+                    'pending': {
+                        'completed_order_id': row['completed_order_id'],
+                        'order_title': row['order_title'],
+                        'reviewee_name': row['executor_name'] if is_client else row['client_name'],
+                        'reviewee_id': row['executor_id'] if is_client else row['client_id'],
+                        'role': 'client' if is_client else 'freelancer',
+                    }
+                })
+
             reviewee_id = query_params.get('user_id')
             if not reviewee_id:
                 return resp(400, {'error': 'user_id обязателен'})

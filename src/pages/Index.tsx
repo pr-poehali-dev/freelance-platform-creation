@@ -147,7 +147,7 @@ const Index = () => {
           revieweeName={s.reviewData.revieweeName}
           currentUserId={s.user.id}
           role={s.reviewData.role}
-          onReviewSubmitted={() => {}}
+          onReviewSubmitted={() => { if (s.user?.id) s.handleResponseSuccess(); }}
         />
       )}
 

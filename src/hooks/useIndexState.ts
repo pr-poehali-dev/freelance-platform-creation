@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { SortOrder } from '@/components/HeroSection';
 
@@ -86,6 +86,7 @@ export const useIndexState = () => {
     return (localStorage.getItem('userRole') as UserRole) || 'client';
   });
   const { toast } = useToast();
+  const shownReviewIds = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -104,6 +105,33 @@ export const useIndexState = () => {
     loadOrders();
     loadTopFreelancers();
   }, []);
+
+  const checkPendingReview = async (userId: number) => {
+    try {
+      const res = await fetch(
+        'https://functions.poehali.dev/44b24f74-a364-4f56-9258-45c0c88b94e5?action=pending',
+        { headers: { 'X-User-Id': userId.toString() } }
+      );
+      const data = await res.json();
+      if (data.pending && !shownReviewIds.current.has(data.pending.completed_order_id)) {
+        shownReviewIds.current.add(data.pending.completed_order_id);
+        setReviewData({
+          completedOrderId: data.pending.completed_order_id,
+          orderTitle: data.pending.order_title,
+          revieweeName: data.pending.reviewee_name,
+          role: data.pending.role,
+        });
+        setShowReviewDialog(true);
+      }
+    } catch { /* тихо */ }
+  };
+
+  useEffect(() => {
+    if (!user?.id) return;
+    checkPendingReview(user.id);
+    const interval = setInterval(() => checkPendingReview(user.id), 30000);
+    return () => clearInterval(interval);
+  }, [user?.id]);
 
   const loadBalance = async (userId: number) => {
     try {

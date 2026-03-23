@@ -16,6 +16,14 @@
       "bodyMatcher": "partial"
     },
     {
+      "name": "GET pending review - no auth",
+      "method": "GET",
+      "path": "/?action=pending",
+      "expectedStatus": 401,
+      "expectedBody": { "error": "string" },
+      "bodyMatcher": "partial"
+    },
+    {
       "name": "POST review - no auth",
       "method": "POST",
       "path": "/",
