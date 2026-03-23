@@ -158,6 +158,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             (username, password_hash, name, email_value, google_id_value)
         )
         user = cur.fetchone()
+
+        cur.execute(
+            "INSERT INTO t_p96553691_freelance_platform_c.freelancers (user_id) VALUES (%s) ON CONFLICT (user_id) DO NOTHING",
+            (user['id'],)
+        )
         conn.commit()
         
         user_dict = dict(user)
