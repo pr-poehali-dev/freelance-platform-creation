@@ -63,6 +63,7 @@ const Index = () => {
         }}
         sortOrder={s.sortOrder}
         onSortChange={s.setSortOrder}
+        userRole={s.userRole}
       />
 
       <ProjectsSection

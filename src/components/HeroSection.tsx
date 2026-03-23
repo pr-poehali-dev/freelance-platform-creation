@@ -31,6 +31,7 @@ interface HeroSectionProps {
   onCategoryChange: (categoryId: string) => void;
   sortOrder: SortOrder;
   onSortChange: (sort: SortOrder) => void;
+  userRole?: 'client' | 'freelancer';
 }
 
 const HeroSection = ({
@@ -42,7 +43,9 @@ const HeroSection = ({
   onCategoryChange,
   sortOrder,
   onSortChange,
+  userRole = 'client',
 }: HeroSectionProps) => {
+  const isFreelancer = userRole === 'freelancer';
   const [inputValue, setInputValue] = useState(searchQuery);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -61,10 +64,16 @@ const HeroSection = ({
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h2 className="text-5xl font-bold mb-4">
-            Найдите идеального <span className="text-gradient">фрилансера</span>
+            {isFreelancer ? (
+              <>Ты справишься <span className="text-gradient">со всем!</span></>
+            ) : (
+              <>Найдите идеального <span className="text-gradient">фрилансера</span></>
+            )}
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Тысячи профессионалов готовы воплотить ваш проект в реальность
+            {isFreelancer
+              ? 'Даже лучшие мастера начинали с малого..'
+              : 'Тысячи профессионалов готовы воплотить ваш проект в реальность'}
           </p>
           <form onSubmit={handleSubmit} className="flex gap-2 max-w-2xl mx-auto">
             <div className="relative flex-1">
