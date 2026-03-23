@@ -60,6 +60,7 @@ export const useIndexState = () => {
   const [selectedUserData, setSelectedUserData] = useState<User | null>(null);
   const [selectedUserOrders, setSelectedUserOrders] = useState<Order[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [respondedOrders, setRespondedOrders] = useState<Order[]>([]);
   const [topFreelancers, setTopFreelancers] = useState<TopFreelancer[]>([]);
   const [showFreelancerProfileDialog, setShowFreelancerProfileDialog] = useState(false);
   const [selectedFreelancerId, setSelectedFreelancerId] = useState<number | null>(null);
@@ -81,6 +82,7 @@ export const useIndexState = () => {
       setUser(userData);
       if (userData.id) {
         loadBalance(userData.id);
+        loadRespondedOrders(userData.id);
       }
     }
   }, []);
@@ -121,6 +123,16 @@ export const useIndexState = () => {
     }
   };
 
+  const loadRespondedOrders = async (userId: number) => {
+    try {
+      const response = await fetch(`https://functions.poehali.dev/2862d449-505a-4b67-970b-db34c9334ed0?freelancer_id=${userId}`);
+      const data = await response.json();
+      setRespondedOrders(data.orders || []);
+    } catch (error) {
+      console.error('Ошибка загрузки откликнутых заказов:', error);
+    }
+  };
+
   const loadTopFreelancers = async () => {
     try {
       const response = await fetch('https://functions.poehali.dev/0db794de-963c-4ac1-9537-4f9a94d9ec66?action=list&limit=4');
@@ -147,6 +159,7 @@ export const useIndexState = () => {
     handleRoleChange(role);
     if (userData.id) {
       loadBalance(userData.id);
+      loadRespondedOrders(userData.id);
     }
   };
 
@@ -254,6 +267,7 @@ export const useIndexState = () => {
 
   const handleResponseSuccess = () => {
     loadOrders();
+    if (user?.id) loadRespondedOrders(user.id);
   };
 
   const handleViewFreelancerProfile = (freelancerId: number) => {
@@ -304,6 +318,7 @@ export const useIndexState = () => {
     selectedUserData,
     selectedUserOrders,
     orders,
+    respondedOrders,
     topFreelancers,
     showFreelancerProfileDialog, setShowFreelancerProfileDialog,
     selectedFreelancerId,

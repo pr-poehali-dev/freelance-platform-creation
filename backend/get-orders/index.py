@@ -39,6 +39,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     query_params = event.get('queryStringParameters') or {}
     user_id = query_params.get('user_id')
+    freelancer_id = query_params.get('freelancer_id')
     category = query_params.get('category')
     status = query_params.get('status', 'active')
     
@@ -47,32 +48,48 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     conn = psycopg2.connect(database_url)
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
-    query = """
-        SELECT o.*, 
-               u.name as user_name, 
-               u.username,
-               executor.name as executor_name,
-               executor.username as executor_username
-        FROM t_p96553691_freelance_platform_c.orders o 
-        JOIN t_p96553691_freelance_platform_c.users u ON o.user_id = u.id 
-        LEFT JOIN t_p96553691_freelance_platform_c.users executor ON o.executor_id = executor.id
-        WHERE 1=1
-    """
-    params = []
-    
-    if user_id:
-        query += " AND o.user_id = %s"
-        params.append(int(user_id))
-    
-    if category:
-        query += " AND o.category = %s"
-        params.append(category)
-    
-    if status:
-        query += " AND o.status = %s"
-        params.append(status)
-    
-    query += " ORDER BY o.created_at DESC LIMIT 100"
+    if freelancer_id:
+        query = """
+            SELECT o.*, 
+                   u.name as user_name, 
+                   u.username,
+                   executor.name as executor_name,
+                   executor.username as executor_username
+            FROM t_p96553691_freelance_platform_c.orders o 
+            JOIN t_p96553691_freelance_platform_c.users u ON o.user_id = u.id 
+            LEFT JOIN t_p96553691_freelance_platform_c.users executor ON o.executor_id = executor.id
+            JOIN t_p96553691_freelance_platform_c.order_responses r ON r.order_id = o.id
+            WHERE r.freelancer_id = %s
+            ORDER BY r.created_at DESC LIMIT 100
+        """
+        params = [int(freelancer_id)]
+    else:
+        query = """
+            SELECT o.*, 
+                   u.name as user_name, 
+                   u.username,
+                   executor.name as executor_name,
+                   executor.username as executor_username
+            FROM t_p96553691_freelance_platform_c.orders o 
+            JOIN t_p96553691_freelance_platform_c.users u ON o.user_id = u.id 
+            LEFT JOIN t_p96553691_freelance_platform_c.users executor ON o.executor_id = executor.id
+            WHERE 1=1
+        """
+        params = []
+        
+        if user_id:
+            query += " AND o.user_id = %s"
+            params.append(int(user_id))
+        
+        if category:
+            query += " AND o.category = %s"
+            params.append(category)
+        
+        if status:
+            query += " AND o.status = %s"
+            params.append(status)
+        
+        query += " ORDER BY o.created_at DESC LIMIT 100"
     
     cur.execute(query, params)
     orders = [dict(row) for row in cur.fetchall()]

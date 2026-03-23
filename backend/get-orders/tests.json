@@ -6,6 +6,14 @@
       "path": "/",
       "expectedStatus": 200,
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get orders by freelancer_id",
+      "method": "GET",
+      "path": "/?freelancer_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {"orders": []},
+      "bodyMatcher": "partial"
     }
   ]
 }

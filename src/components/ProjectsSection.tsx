@@ -55,6 +55,7 @@ interface TopFreelancer {
 
 interface ProjectsSectionProps {
   orders: Order[];
+  respondedOrders?: Order[];
   freelancers: Freelancer[];
   topFreelancers: TopFreelancer[];
   user: User | null;
@@ -84,6 +85,7 @@ const CATEGORY_SIBLINGS: Record<string, string[]> = {
 
 const ProjectsSection = ({
   orders,
+  respondedOrders = [],
   freelancers,
   topFreelancers,
   user,
@@ -130,13 +132,15 @@ const ProjectsSection = ({
     return 0;
   };
 
-  const exactMatches = orders.filter((o) => matchesSearch(o) && matchesCategory(o)).sort(sortFn);
+  const sourceOrders = isFreelancer ? respondedOrders : orders;
+
+  const exactMatches = sourceOrders.filter((o) => matchesSearch(o) && matchesCategory(o)).sort(sortFn);
 
   const hasQuery = q.length > 0 || selectedCategory !== 'all';
   const noExactResults = hasQuery && exactMatches.length === 0;
 
   const similarOrders = noExactResults
-    ? orders.filter((o) => {
+    ? sourceOrders.filter((o) => {
         if (selectedCategory !== 'all') {
           const siblings = CATEGORY_SIBLINGS[selectedCategory] || [];
           return siblings.includes(o.category);
@@ -277,10 +281,12 @@ const ProjectsSection = ({
               ))}
               {displayOrders.length === 0 && !noExactResults && (
                 <div className="col-span-2 text-center py-12 text-muted-foreground">
-                  <p className="text-lg mb-4">Пока нет активных заказов</p>
+                  <p className="text-lg mb-4">
+                    {isFreelancer ? 'Вы ещё не откликались на заказы' : 'Пока нет активных заказов'}
+                  </p>
                   {isFreelancer ? (
                     <Button onClick={() => setActiveTab('all-orders')} className="gradient-primary text-white border-0">
-                      Подписаться на первый заказ
+                      Найти первый заказ
                     </Button>
                   ) : (
                     <Button onClick={onCreateOrder} className="gradient-primary text-white border-0">
